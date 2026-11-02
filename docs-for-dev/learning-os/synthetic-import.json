@@ -1,0 +1,25 @@
+[
+  {
+    "origin_type": "external_import",
+    "origin_ref": "synthetic:source-demo:v1",
+    "question_id": "12(b)",
+    "question": "【合成資料】下列哪個選項代表五？",
+    "question_type": "single_choice",
+    "options": {
+      "A": "一",
+      "B": "二",
+      "C": "三",
+      "D": "四",
+      "E": "五"
+    },
+    "source": "import",
+    "result": "ungraded",
+    "correct_answer": "E",
+    "source_metadata": {
+      "filename": "synthetic-upload.pdf",
+      "year": 2024,
+      "pdf_page": 3,
+      "question_number": "12(b)"
+    }
+  }
+]

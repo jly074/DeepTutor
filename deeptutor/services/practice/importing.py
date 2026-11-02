@@ -10,6 +10,8 @@ from pathlib import Path
 import re
 import zipfile
 
+from deeptutor.core.question_source import QuestionSourceMetadata
+
 MAX_BYTES = 5 * 1024 * 1024
 MAX_ROWS = 500
 MAX_CELL = 20000
@@ -127,6 +129,24 @@ def parse_rows(data: bytes, filename: str) -> list[tuple[int, dict]]:
     ]
 
 
+def normalize_source(row: dict) -> dict:
+    """Accept explicit JSON labels or flat spreadsheet columns; infer nothing."""
+    value = row.get("source_metadata")
+    if value is None:
+        value = {
+            key: row.get(f"source_{key}")
+            for key in ("filename", "year", "pdf_page", "question_number")
+        }
+    if not isinstance(value, dict):
+        raise ValueError("source_metadata must be an object")
+    value = {key: item for key, item in value.items() if item is not None and item != ""}
+    for key in ("year", "pdf_page"):
+        item = value.get(key)
+        if isinstance(item, str) and item.strip().isascii() and item.strip().isdigit():
+            value[key] = int(item.strip())
+    return QuestionSourceMetadata.model_validate(value).model_dump(exclude_defaults=True)
+
+
 def normalize_question(raw: dict) -> dict:
     row = {str(key).strip().lower(): value for key, value in raw.items()}
     fields = {key: next((row[a] for a in names if a in row), "") for key, names in ALIASES.items()}
@@ -191,6 +211,12 @@ def normalize_question(raw: dict) -> dict:
     identity = {
         key: result[key] for key in ("question", "question_type", "options", "correct_answer")
     }
+    source_metadata = normalize_source(row)
+    if source_metadata:
+        result["source_metadata"] = source_metadata
+        # Keep identical questions from different explicit sources. Source-less
+        # legacy imports retain their original hash and deduplication behavior.
+        identity["source_metadata"] = source_metadata
     result["question_id"] = (
         "import:"
         + hashlib.sha256(

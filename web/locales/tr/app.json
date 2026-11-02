@@ -6406,5 +6406,9 @@
   "Learning text preview": "Öğrenme metni önizlemesi",
   "Reset learning text": "Öğrenme metnini sıfırla",
   "language.portuguese": "Português",
-  "language.japanese": "日本語"
+  "language.japanese": "日本語",
+  "Source file": "Source file",
+  "Source year": "Source year",
+  "PDF page (1-based)": "PDF page (1-based)",
+  "Original question number": "Original question number"
 }

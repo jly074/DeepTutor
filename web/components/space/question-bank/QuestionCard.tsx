@@ -17,6 +17,7 @@ import type { NotebookCategory, NotebookEntry } from "@/lib/notebook-api";
 import { optionIsAnswer, questionResult, questionResultBadge } from "@/lib/question-bank-answers";
 import { bookRoute, masterySessionRoute } from "@/lib/learning-routes";
 import CategoryMenu from "./CategoryMenu";
+import QuestionSource from "./QuestionSource";
 import { practiceMarkdown } from "@/lib/practice-content";
 import Tooltip from "@/shared/ui/Tooltip";
 
@@ -316,6 +317,8 @@ export default function QuestionCard({
           allowHtml={false}
         />
       </div>
+
+      <QuestionSource source={entry.source_metadata} />
 
       {/* Aligned with the question text: checkbox (0.875rem) + gap (0.75rem). */}
       <div className="mt-3 space-y-2" style={{ paddingLeft: "1.625rem" }}>

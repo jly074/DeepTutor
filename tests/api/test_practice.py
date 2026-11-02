@@ -383,3 +383,64 @@ def test_analytics_local_midnight_dst_zero_days_and_deleted_sources(bank):
     with repo.connect() as conn:
         conn.execute("UPDATE sessions SET deleted_at=? WHERE id='lesson'", (now,))
     assert repo.analytics("America/New_York", 7, now=now)["sources"] == []
+
+
+def test_import_source_roundtrip_and_distinct_sources(bank):
+    store, _, client = bank
+    base = {
+        "question": "合成五選一",
+        "options": {"A": "一", "B": "二", "C": "三", "D": "四", "E": "五"},
+        "answer": "E",
+        "source_metadata": {
+            "filename": "synthetic.pdf",
+            "year": 2024,
+            "pdf_page": 2,
+            "question_number": "7",
+        },
+    }
+
+    def upload(row):
+        previewed = client.post(
+            "/practice/import/preview",
+            files={"file": ("synthetic.json", json.dumps([row]).encode())},
+        ).json()
+        assert previewed["token"] and previewed["errors"] == []
+        assert previewed["samples"][0]["source_metadata"] == row["source_metadata"]
+        return client.post("/practice/import/commit", json={"token": previewed["token"]}).json()
+
+    assert upload(base)["created"] == 1
+    assert upload(base)["duplicates"] == 1
+    other = {**base, "source_metadata": {**base["source_metadata"], "year": 2025}}
+    assert upload(other)["created"] == 1
+    reopened = SQLiteSessionStore(store.db_path)
+    items = asyncio.run(reopened.list_notebook_entries())["items"]
+    assert len(items) == 2
+    assert {item["source_metadata"]["year"] for item in items} == {2024, 2025}
+    assert all(
+        item["question"] == base["question"] and item["options"] == base["options"]
+        for item in items
+    )
+
+
+def test_csv_source_columns_and_invalid_source_preview(bank):
+    _, _, client = bank
+    data = b"question,answer,source_filename,source_year,source_pdf_page,source_question_number\nSynthetic,yes,synthetic.pdf,2024,3,12(b)\n"
+    result = client.post("/practice/import/preview", files={"file": ("test.csv", data)}).json()
+    assert result["samples"][0]["source_metadata"] == {
+        "filename": "synthetic.pdf",
+        "year": 2024,
+        "pdf_page": 3,
+        "question_number": "12(b)",
+    }
+    invalid = data.replace(b",3,", b",0,")
+    result = client.post("/practice/import/preview", files={"file": ("test.csv", invalid)}).json()
+    assert result["token"] is None and result["errors"][0]["row"] == 2
+
+
+def test_source_less_import_keeps_fixed_baseline_hash():
+    # Captured from f7aed074's importing.py, not recomputed from the current implementation.
+    expected = "import:93ac4ed934d25236cbb843baa2fd8669d679ba203ae7a7b3513ffe14408cd238"
+    row = {"question": "2+2=?", "A": "3", "B": "4", "answer": "B"}
+    assert normalize_question(row)["question_id"] == expected
+    assert normalize_question({**row, "source_metadata": {}})["question_id"] == expected
+    assert normalize_question({**row, "source_metadata": None})["question_id"] == expected

@@ -201,6 +201,13 @@ export interface NotebookAnswerImage {
   mime_type: string;
 }
 
+export interface QuestionSourceMetadata {
+  filename?: string;
+  year?: number | null;
+  pdf_page?: number | null;
+  question_number?: string;
+}
+
 export interface NotebookEntry {
   id: number;
   session_id: string;
@@ -218,6 +225,7 @@ export interface NotebookEntry {
   difficulty: string;
   user_answer: string;
   user_answer_images?: NotebookAnswerImage[];
+  source_metadata?: QuestionSourceMetadata | null;
   source: AssessmentSource;
   material_id: string;
   material_title: string;
@@ -467,6 +475,7 @@ export async function upsertNotebookEntry(data: {
    */
   user_answer_images?: NotebookAnswerImageUpload[];
   is_correct?: boolean;
+  source_metadata?: QuestionSourceMetadata | null;
   source?: AssessmentSource;
   material_id?: string;
   material_title?: string;

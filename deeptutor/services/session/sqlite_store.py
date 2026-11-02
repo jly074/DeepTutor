@@ -530,6 +530,15 @@ class SQLiteSessionStore:
             self._migrate_notebook_entries_add_assessment_review(conn)
             self._migrate_notebook_entries_add_assessment_v2(conn)
             self._migrate_notebook_entry_origins(conn)
+            # Add after the origin migration, which can rebuild the legacy table.
+            notebook_columns = {
+                row[1] for row in conn.execute("PRAGMA table_info(notebook_entries)")
+            }
+            if "source_metadata_json" not in notebook_columns:
+                conn.execute(
+                    "ALTER TABLE notebook_entries "
+                    "ADD COLUMN source_metadata_json TEXT NOT NULL DEFAULT '{}'"
+                )
             self._migrate_assessment_attempt_origins(conn)
             self._migrate_assessment_attempt_link_state(conn)
             self._migrate_turn_runtime_columns(conn)
@@ -3549,6 +3558,16 @@ class SQLiteSessionStore:
                     images_json is None,
                 ),
             )
+            # Old callers omit this field. Preserve their stored source on an
+            # answer-only resubmission; an explicit object replaces the labels.
+            source_metadata = item.get("source_metadata")
+            if isinstance(source_metadata, dict):
+                conn.execute(
+                    "UPDATE notebook_entries SET source_metadata_json = ? "
+                    "WHERE origin_type = ? AND origin_ref = ? "
+                    "AND turn_id = ? AND question_id = ?",
+                    (_json_dumps(source_metadata), origin_type, origin_ref, turn_id, question_id),
+                )
             upserted += 1
         return upserted
 
@@ -4086,6 +4105,9 @@ class SQLiteSessionStore:
             "user_answer_images": images,
             "is_correct": is_correct,
             "source": (row["source"] or "deep_question") if "source" in keys else "deep_question",
+            "source_metadata": _json_loads(row["source_metadata_json"], {})
+            if "source_metadata_json" in keys
+            else {},
             "material_id": (row["material_id"] or "") if "material_id" in keys else "",
             "material_title": (row["material_title"] or "") if "material_title" in keys else "",
             "section_id": (row["section_id"] or "") if "section_id" in keys else "",
@@ -4260,7 +4282,7 @@ class SQLiteSessionStore:
                 n.origin_type, n.origin_ref, n.turn_id, n.question_id,
                 n.question, n.question_type, n.options_json,
                 n.correct_answer, n.explanation, n.difficulty,
-                n.user_answer, n.user_answer_images_json, n.source, n.material_id,
+                n.user_answer, n.user_answer_images_json, n.source, n.source_metadata_json, n.material_id,
                 n.material_title, n.section_id, n.section_title, n.score_trend,
                 n.assessment_type, n.result, n.mastery_path_id, n.knowledge_point_id,
                 n.attempt_count, n.hints_used, n.confidence, n.response_time, n.quality,

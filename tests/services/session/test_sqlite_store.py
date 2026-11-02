@@ -155,6 +155,25 @@ def test_store_migrates_legacy_notebook_review_columns(tmp_path: Path) -> None:
             """,
             (now, now),
         )
+        conn.execute(
+            "INSERT INTO sessions (id, title, created_at, updated_at) VALUES (?, ?, ?, ?)",
+            ("session-1", "Synthetic legacy", now, now),
+        )
+        conn.execute(
+            "UPDATE notebook_entries SET question=?, options_json=?, correct_answer=?, "
+            "bookmarked=1, user_answer_images_json=?",
+            (
+                "合成舊題：哪個是五？",
+                json.dumps({"A": "一", "B": "二", "C": "三", "D": "四", "E": "五"}),
+                "E",
+                '[{"id":"synthetic-image","url":"/synthetic.png"}]',
+            ),
+        )
+        conn.row_factory = sqlite3.Row
+        before = dict(conn.execute("SELECT * FROM notebook_entries").fetchone())
+        schema = {row[1]: row for row in conn.execute("PRAGMA table_info(notebook_entries)")}
+        assert "origin_type" not in schema and "source_metadata_json" not in schema
+        assert schema["session_id"][3] == 1  # NOT NULL forces the origin-table rebuild.
         conn.commit()
 
     store = SQLiteSessionStore(db_path=db_path)
@@ -171,6 +190,30 @@ def test_store_migrates_legacy_notebook_review_columns(tmp_path: Path) -> None:
     with sqlite3.connect(db_path) as conn:
         indexes = {row[1] for row in conn.execute("PRAGMA index_list(notebook_entries)")}
     assert "idx_notebook_entries_review" in indexes
+    assert entry["source_metadata"] == {}
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        after = dict(conn.execute("SELECT * FROM notebook_entries").fetchone())
+        assert {key: after[key] for key in before} == before
+        schema = {row[1]: row for row in conn.execute("PRAGMA table_info(notebook_entries)")}
+        assert schema["session_id"][3] == 0
+        assert "origin_type" in schema and "source_metadata_json" in schema
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+    # New labels work after the rebuild and survive a second initialization.
+    metadata = {
+        "filename": "synthetic-legacy.pdf",
+        "year": 2024,
+        "pdf_page": 3,
+        "question_number": "12(b)",
+    }
+    asyncio.run(
+        store.upsert_notebook_entries("session-1", [{**entry, "source_metadata": metadata}])
+    )
+    reopened = SQLiteSessionStore(db_path=db_path)
+    restored = asyncio.run(reopened.get_notebook_entry(entry["id"]))
+    assert restored["source_metadata"] == metadata
+    assert restored["question"] == entry["question"]
+    assert restored["options"] == entry["options"]
 
 
 def test_store_migrates_legacy_workspace_ownership_without_reordering(

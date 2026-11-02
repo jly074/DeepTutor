@@ -15713,6 +15713,8 @@ export interface components {
         | "book"
         | "partner_chat"
         | "import";
+      readonly source_metadata?:
+        components["schemas"]["QuestionSourceMetadata"] | null;
       /**
        * Turn Id
        * @default
@@ -16271,6 +16273,26 @@ export interface components {
        * @default 0
        */
       readonly wrong: number;
+    };
+    /**
+     * QuestionSourceMetadata
+     * @description User-supplied source labels, never inferred from a question or path.
+     */
+    readonly QuestionSourceMetadata: {
+      /**
+       * Filename
+       * @default
+       */
+      readonly filename: string;
+      /** Pdf Page */
+      readonly pdf_page?: number | null;
+      /**
+       * Question Number
+       * @default
+       */
+      readonly question_number: string;
+      /** Year */
+      readonly year?: number | null;
     };
     /** QuizAnswerItem */
     readonly QuizAnswerItem: {
@@ -18328,6 +18350,8 @@ export interface components {
         | "book"
         | "partner_chat"
         | "import";
+      readonly source_metadata?:
+        components["schemas"]["QuestionSourceMetadata"] | null;
       /**
        * Turn Id
        * @default
@@ -19175,6 +19199,8 @@ export type SchemaQuestionBankMaterial =
   components["schemas"]["QuestionBankMaterial"];
 export type SchemaQuestionBankStats =
   components["schemas"]["QuestionBankStats"];
+export type SchemaQuestionSourceMetadata =
+  components["schemas"]["QuestionSourceMetadata"];
 export type SchemaQuizAnswerItem = components["schemas"]["QuizAnswerItem"];
 export type SchemaQuizAnswersPayload =
   components["schemas"]["QuizAnswersPayload"];

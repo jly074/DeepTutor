@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field, model_validator
 
 from deeptutor.core.assessment import AssessmentResult, AssessmentSource, QuestionOriginType
+from deeptutor.core.question_source import QuestionSourceMetadata
 from deeptutor.services.session import get_sqlite_session_store
 from deeptutor.services.storage import get_attachment_store
 
@@ -61,6 +62,7 @@ class NotebookEntryItem(BaseModel):
     difficulty: str = ""
     user_answer: str = ""
     user_answer_images: list[AnswerImageItem] = []
+    source_metadata: QuestionSourceMetadata | None = None
     source: AssessmentSource = "deep_question"
     material_id: str = ""
     material_title: str = ""
@@ -172,6 +174,7 @@ class UpsertEntryRequest(BaseModel):
     # ``None`` means "don't touch any previously-stored images on update";
     # an empty list explicitly clears them.
     user_answer_images: list[AnswerImageUpload] | None = None
+    source_metadata: QuestionSourceMetadata | None = None
     source: AssessmentSource = "deep_question"
     material_id: str = ""
     material_title: str = ""

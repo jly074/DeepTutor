@@ -349,8 +349,8 @@ class PracticeStore:
                     INSERT OR IGNORE INTO notebook_entries(
                         session_id, origin_type, origin_ref, question_id, question, question_type,
                         options_json, correct_answer, explanation, difficulty, user_answer, source,
-                        result, assessment_type, created_at, updated_at, material_title, material_id)
-                    VALUES(NULL, 'external_import', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'import', ?, 'quiz', ?, ?, ?, ?)
+                        result, assessment_type, created_at, updated_at, material_title, material_id, source_metadata_json)
+                    VALUES(NULL, 'external_import', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'import', ?, 'quiz', ?, ?, ?, ?, ?)
                 """,
                     (
                         origin_ref,
@@ -367,6 +367,7 @@ class PracticeStore:
                         now,
                         staged["filename"],
                         "import:" + token,
+                        json.dumps(question.get("source_metadata") or {}, ensure_ascii=False),
                     ),
                 )
                 created += cursor.rowcount

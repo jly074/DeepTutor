@@ -8446,6 +8446,16 @@
             "title": "Source",
             "type": "string"
           },
+          "source_metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionSourceMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "turn_id": {
             "default": "",
             "title": "Turn Id",
@@ -9639,6 +9649,50 @@
           }
         },
         "title": "QuestionBankStats",
+        "type": "object"
+      },
+      "QuestionSourceMetadata": {
+        "description": "User-supplied source labels, never inferred from a question or path.",
+        "properties": {
+          "filename": {
+            "default": "",
+            "maxLength": 255,
+            "title": "Filename",
+            "type": "string"
+          },
+          "pdf_page": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Page"
+          },
+          "question_number": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Question Number",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "maximum": 9999.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "title": "QuestionSourceMetadata",
         "type": "object"
       },
       "QuizAnswerItem": {
@@ -14550,6 +14604,16 @@
             ],
             "title": "Source",
             "type": "string"
+          },
+          "source_metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionSourceMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "turn_id": {
             "default": "",

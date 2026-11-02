@@ -344,3 +344,139 @@ def test_rename_onto_an_existing_name_is_a_conflict_not_a_crash(client):
 
 def test_renaming_a_missing_category_is_404(client):
     assert client.patch(f"{PREFIX}/categories/9999", json={"name": "Ghost"}).status_code == 404
+
+
+def test_source_metadata_survives_restart_and_legacy_resubmission(client, monkeypatch):
+    """Exercise real SQLite, API serialization, list, lookup, and reopened store."""
+    payload = {
+        "origin_type": "external_import",
+        "origin_ref": "synthetic:source-test:v1",
+        "question_id": "12(b)",
+        "question": "合成測試：請選出正確答案。",
+        "options": {"A": "一", "B": "二", "C": "三", "D": "四", "E": "五"},
+        "source": "import",
+        "source_metadata": {
+            "filename": "synthetic-exam.pdf",
+            "year": 2024,
+            "pdf_page": 3,
+            "question_number": "12(b)",
+        },
+    }
+    response = client.post(f"{PREFIX}/entries/upsert", json=payload)
+    assert response.status_code == 200
+    entry_id = response.json()["id"]
+    expected = payload.pop("source_metadata")
+    assert response.json()["source_metadata"] == expected
+    # Reopen the database to prove this is not process-local memory.
+    reopened = SQLiteSessionStore(db_path=client.store.db_path)
+    monkeypatch.setattr(
+        "deeptutor.api.routers.question_notebook.get_sqlite_session_store",
+        lambda: reopened,
+    )
+    legacy = client.post(f"{PREFIX}/entries/upsert", json={**payload, "user_answer": "E"})
+    assert legacy.status_code == 200
+    assert legacy.json()["id"] == entry_id
+    listing = client.get(f"{PREFIX}/entries").json()
+    assert listing["total"] == 1
+    item = listing["items"][0]
+    assert item["source_metadata"] == expected
+    assert item["question"] == payload["question"]
+    assert item["options"] == payload["options"]
+    lookup = client.get(
+        f"{PREFIX}/entries/lookup/by-question",
+        params={
+            "origin_type": payload["origin_type"],
+            "origin_ref": payload["origin_ref"],
+            "question_id": payload["question_id"],
+        },
+    )
+    assert lookup.json()["source_metadata"] == expected
+    partial = client.post(
+        f"{PREFIX}/entries/upsert",
+        json={
+            **payload,
+            "source_metadata": {"filename": "synthetic-v2.pdf"},
+        },
+    ).json()["source_metadata"]
+    assert partial == {
+        "filename": "synthetic-v2.pdf",
+        "year": None,
+        "pdf_page": None,
+        "question_number": "",
+    }
+
+
+def test_source_metadata_migrates_legacy_database(client, monkeypatch):
+    _seed(client)
+    # Simulate the immediately preceding schema with real saved entries.
+    import sqlite3
+
+    with sqlite3.connect(client.store.db_path) as conn:
+        conn.execute("ALTER TABLE notebook_entries DROP COLUMN source_metadata_json")
+    reopened = SQLiteSessionStore(db_path=client.store.db_path)
+    monkeypatch.setattr(
+        "deeptutor.api.routers.question_notebook.get_sqlite_session_store",
+        lambda: reopened,
+    )
+    items = client.get(f"{PREFIX}/entries").json()["items"]
+    assert len(items) == 2
+    assert all(item["source_metadata"]["year"] is None for item in items)
+    assert all(item["source_metadata"]["filename"] == "" for item in items)
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {"pdf_page": 0},
+        {"pdf_page": -1},
+        {"pdf_page": 1.5},
+        {"pdf_page": True},
+        {"year": 10000},
+        {"year": "2024"},
+        {"filename": "x" * 256},
+    ],
+)
+def test_invalid_source_metadata_is_rejected_before_saving(client, metadata):
+    response = client.post(
+        f"{PREFIX}/entries/upsert",
+        json={
+            "origin_type": "external_import",
+            "origin_ref": "synthetic:invalid",
+            "question_id": "1",
+            "question": "Synthetic",
+            "source_metadata": metadata,
+        },
+    )
+    assert response.status_code == 422
+    assert client.get(f"{PREFIX}/entries").json()["total"] == 0
+
+
+def test_source_metadata_null_preserves_and_empty_object_clears(client):
+    payload = {
+        "origin_type": "external_import",
+        "origin_ref": "synthetic:clear-test",
+        "question_id": "1",
+        "question": "Synthetic",
+        "source_metadata": {
+            "filename": "synthetic.pdf",
+            "year": 2024,
+            "pdf_page": 3,
+            "question_number": "12(b)",
+        },
+    }
+    saved = client.post(f"{PREFIX}/entries/upsert", json=payload)
+    assert saved.status_code == 200
+    for value, expected in [
+        (None, payload["source_metadata"]),
+        ({}, {"filename": "", "year": None, "pdf_page": None, "question_number": ""}),
+    ]:
+        response = client.post(
+            f"{PREFIX}/entries/upsert", json={**payload, "source_metadata": value}
+        )
+        assert response.status_code == 200
+        assert response.json()["id"] == saved.json()["id"]
+        assert response.json()["source_metadata"] == expected
+        assert client.get(f"{PREFIX}/entries").json()["items"][0]["source_metadata"] == expected
+    reopened = SQLiteSessionStore(client.store.db_path)
+    entry = asyncio.run(reopened.get_notebook_entry(saved.json()["id"]))
+    assert entry["source_metadata"] == expected
