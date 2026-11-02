@@ -1,7 +1,10 @@
 # Question source handoff — 2026-11-02
 
-Status: implemented and locally verified; awaiting user acceptance. No commit,
-push, deployment, external account connection, or automation cutover performed.
+Original first-round acceptance snapshot: implemented and locally verified; awaiting user acceptance.
+At that snapshot no commit, push, deployment, external account connection, or automation cutover had occurred.
+Subsequently committed locally as `a8fb61400`; Drive references followed in `93f952439`.
+See [Drive references](drive-sources.md) and [Windows trial/update workflow](windows-trial.md)
+for later increments and their separate verification limits. Remote publication remains pending.
 This is a public-safe engineering record, not the private product work package.
 `/docs/` is ignored by this repository, so this record uses the existing developer handbook.
 
