@@ -1108,13 +1108,15 @@ def test_windows_children_and_console_tools_allocate_no_console(
     monkeypatch.setattr(launcher.threading, "Thread", lambda **_kwargs: _NoopThread())
     monkeypatch.setattr(launcher.shutil, "which", lambda name: name)
 
+    # This test isolates console flags; Windows npm argv has dedicated tests.
+    monkeypatch.setattr(launcher, "npm_command", lambda npm, *args: ["node", "npm-cli.js", *args])
     launcher._spawn(["node", "server.js"], cwd=tmp_path, env={}, name="frontend")
     launcher._send_tree_signal(4242, None, launcher.KILL_SIGNAL)
     launcher._port_listeners_windows(3782)
     launcher._ensure_web_dependencies(tmp_path, "npm")
 
     assert popens[0]["kwargs"]["creationflags"] == 0x200 | 0x08000000
-    assert [run["command"][0] for run in runs] == ["taskkill", "netstat", "npm"]
+    assert [run["command"][0] for run in runs] == ["taskkill", "netstat", "node"]
     for run in runs:
         assert run["kwargs"]["creationflags"] == 0x08000000, run["command"]
 

@@ -153,11 +153,16 @@ def test_start_needs_matching_dependencies_and_isolated_launcher(
     (home / "dependencies.json").write_text(
         trial.json.dumps({"commit": git(local, "rev-parse", "HEAD")})
     )
+    (local / ".git/learning-trial-failure.json").unlink()  # successful deps recovery simulated
     calls = []
     monkeypatch.setattr(trial, "execute", lambda *args: calls.append(args))
     trial.lifecycle(local, "start")
     command, cwd, env = calls[0]
-    assert command[1:] == [local / "scripts/start_web.py", "--home", home / "runtime", "--dev"]
+    assert command[1:] == [
+        local / "scripts/learning_trial_worker.py",
+        local / ".git/learning-trial-cleanup-pending",
+        home / "runtime",
+    ]
     assert cwd == local and env["DEEPTUTOR_HOME"] == str(home / "runtime")
     (home / "dependencies.json").write_text('{"commit":"old"}')
     with pytest.raises(trial.UpdateError, match="Dependencies not verified"):

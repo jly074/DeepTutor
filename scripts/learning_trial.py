@@ -9,11 +9,15 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 
 from update import Git as ExistingGit
 from update import UpdateError, current_branch, dependency_hints
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from deeptutor.runtime.npm_command import npm_command  # noqa: E402
 
 SOURCE = "https://github.com/jly074/DeepTutor.git"
 
@@ -81,7 +85,8 @@ def exclusive(path):
             out.write(str(os.getpid()))
         yield
     finally:
-        path.unlink()
+        if not path.with_name("learning-trial-cleanup-pending").exists():
+            path.unlink()
 
 
 def configure(repo, branch, home):
@@ -141,6 +146,17 @@ def execute(command, cwd, env):
     subprocess.run([str(x) for x in command], cwd=cwd, env=env, check=True)
 
 
+def execute_supervised(command, cwd, env):
+    # The worker shares the console and receives Ctrl+C. Keep the outer lock
+    # until it has finished bounded tree cleanup. No shell or signal masking
+    # changes are persisted outside this process.
+    previous = signal.signal(signal.SIGINT, lambda *_: None)
+    try:
+        execute(command, cwd, env)
+    finally:
+        signal.signal(signal.SIGINT, previous)
+
+
 def lifecycle(repo, action):
     git, marker, _ = paths(repo)
     if not marker.exists():
@@ -152,8 +168,20 @@ def lifecycle(repo, action):
     home = Path(config["home"])
     if not home.is_dir() or home.is_symlink():
         raise UpdateError("Trial home missing or replaced; inspect before continuing.")
+    failure = marker.with_name("learning-trial-failure.json")
+    if failure.exists() and action != "status":
+        prior = json.loads(failure.read_text(encoding="utf-8"))["action"]
+        if action == "start" or (action == "deps" and prior == "update"):
+            raise UpdateError(
+                f"Previous {prior} did not succeed. Retry update, or deps after a deps/start failure, before start."
+            )
+    if action != "status":
+        failure.write_text(
+            json.dumps({"action": action, "state": "pending_or_failed"}), encoding="utf-8"
+        )
     if action == "update":
         update(git, config["branch"])
+        failure.unlink()
         return
     sha = git.run(["rev-parse", "HEAD"]).stdout
     print(f"Version={sha}\nBranch={config['branch']}\nTrial data={home / 'runtime'}", flush=True)
@@ -174,7 +202,7 @@ def lifecycle(repo, action):
         execute([python, "-m", "pip", "install", "-r", "requirements/full.txt"], repo, env)
         execute([python, "-m", "pip", "install", "-e", ".", "--no-deps"], repo, env)
         execute([python, "-m", "pip", "check"], repo, env)
-        execute([shutil.which("npm"), "ci", "--legacy-peer-deps"], repo / "web", env)
+        execute(npm_command(shutil.which("npm"), "ci", "--legacy-peer-deps"), repo / "web", env)
         stamp.write_text(json.dumps({"commit": sha}), encoding="utf-8")
         print("Dependencies ready for this commit. Next: start.")
     else:
@@ -188,9 +216,17 @@ def lifecycle(repo, action):
             "Starting existing development launcher. Read its actual URL; Ctrl+C stops it.",
             flush=True,
         )
-        execute(
-            [python, repo / "scripts/start_web.py", "--home", home / "runtime", "--dev"], repo, env
+        execute_supervised(
+            [
+                python,
+                repo / "scripts/learning_trial_worker.py",
+                marker.with_name("learning-trial-cleanup-pending"),
+                home / "runtime",
+            ],
+            repo,
+            env,
         )
+    failure.unlink()
 
 
 def main(argv=None):
@@ -210,7 +246,14 @@ def main(argv=None):
             else:
                 lifecycle(repo, args.action)
         return 0
-    except (UpdateError, OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+    except (
+        UpdateError,
+        OSError,
+        ValueError,
+        KeyError,
+        RuntimeError,
+        subprocess.SubprocessError,
+    ) as exc:
         # Do not echo subprocess stderr: it may contain credential-bearing URLs.
         print(
             f"BLOCKED: {exc if isinstance(exc, UpdateError) else type(exc).__name__}. No automatic rollback; inspect status before retry.",

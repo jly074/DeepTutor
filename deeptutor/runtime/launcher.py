@@ -30,6 +30,7 @@ from deeptutor.runtime.home import (
     validate_runtime_home,
 )
 from deeptutor.runtime.memory_probe import SUPERVISOR_PID_ENV
+from deeptutor.runtime.npm_command import npm_command
 from deeptutor.runtime.process import is_process_alive
 from deeptutor.services.app_update import LAUNCHER_PID_ENV
 
@@ -934,7 +935,7 @@ def _ensure_web_dependencies(source: Path, npm: str) -> None:
         return
     action = "ci" if (source / "package-lock.json").exists() else "install"
     _log(f"web/node_modules not found — running `npm {action}` in {source} ...")
-    result = subprocess.run([npm, action], cwd=source, **_no_window_kwargs())
+    result = subprocess.run(npm_command(npm, action), cwd=source, **_no_window_kwargs())
     if result.returncode != 0:
         raise SystemExit(
             f"`npm {action}` failed (exit {result.returncode}). "
@@ -1030,7 +1031,9 @@ def _ensure_source_production_build(
     generated_config = [source / "next-env.d.ts", source / "tsconfig.json"]
     snapshots = {path: path.read_bytes() if path.is_file() else None for path in generated_config}
     try:
-        result = subprocess.run([npm, "run", "build"], cwd=source, env=env, **_no_window_kwargs())
+        result = subprocess.run(
+            npm_command(npm, "run", "build"), cwd=source, env=env, **_no_window_kwargs()
+        )
     finally:
         for path, original in snapshots.items():
             if original is None:
@@ -1115,7 +1118,7 @@ def _resolve_frontend(
                 standalone,
             )
         return FrontendRuntime(
-            "source", [npm, "run", "dev", "--", "--port", str(frontend_port)], source
+            "source", npm_command(npm, "run", "dev", "--", "--port", str(frontend_port)), source
         )
 
     raise SystemExit(

@@ -4,6 +4,9 @@
 不另建應用、不設定排程、不發布、不自動登入。適用來源固定為
 `https://github.com/jly074/DeepTutor.git`。這是開發試用，不是正式服務部署。
 
+本流程已有[第四輪可靠性補強](trial-reliability.md)：npm 無 shell 引數、收尾 guard 與失敗狀態阻擋。
+以下首次／更新指令不變；Windows 實機仍待驗。
+
 ## 發布前提（目前仍受阻）
 
 2026-11-02 唯讀 `git ls-remote --heads origin` 顯示遠端僅有 `main`，
@@ -47,7 +50,7 @@ py -3.12 scripts/learning_trial.py start
 
 ## 後續每輪更新
 
-先在啟動視窗按 Ctrl+C，確認伺服器已停止。備份試用 runtime 後，在 checkout 執行：
+先在啟動視窗按 Ctrl+C，等待 worker 收尾並確認伺服器已停止。備份試用 runtime 後，在 checkout 執行：
 
 ```powershell
 py -3.12 scripts/learning_trial.py update
@@ -81,6 +84,8 @@ ahead/behind；沒有新版就明確顯示 Already up to date。其效果相當�
 | 開發伺服器產生 tracked 變動 | 一樣停止，不視為可丟棄。檢查 diff，交由開發者判定。 |
 
 設定保存在該 checkout 的 `.git/learning-trial.json`；不接受任意來源 URL。
+第四輪新增 failure 狀態：update 失敗後先重跑 update；deps/start 失敗後先完成 deps。
+存在 cleanup-pending 時保留 lock，必須查明程序狀態，不能直接刪除以繞過保護。
 同一流程的 setup/update/deps/start 互斥。另行手動啟動的伺服器不在此 lock 管理內，
 使用者仍須停止它們。OS／套件管理器環境仍沿用本機設定；不配置或輸出憑證。
 
