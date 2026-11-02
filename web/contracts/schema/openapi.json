@@ -4403,6 +4403,120 @@
         "title": "DocumentSummaryResponse",
         "type": "object"
       },
+      "DriveFile": {
+        "properties": {
+          "id": {
+            "pattern": "^[A-Za-z0-9_-]{1,200}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "mimeType": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Mimetype",
+            "type": "string"
+          },
+          "modifiedTime": {
+            "default": "",
+            "maxLength": 64,
+            "title": "Modifiedtime",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parents": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Parents",
+            "type": "array"
+          },
+          "trashed": {
+            "default": false,
+            "title": "Trashed",
+            "type": "boolean"
+          },
+          "version": {
+            "default": "",
+            "maxLength": 64,
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "mimeType"
+        ],
+        "title": "DriveFile",
+        "type": "object"
+      },
+      "DriveOverview": {
+        "properties": {
+          "allowed_folders": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Folders",
+            "type": "array"
+          },
+          "simulated": {
+            "title": "Simulated",
+            "type": "boolean"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "not_connected",
+              "needs_authorization",
+              "mock",
+              "queryable",
+              "blocked"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "simulated",
+          "allowed_folders",
+          "sources"
+        ],
+        "title": "DriveOverview",
+        "type": "object"
+      },
+      "DriveSelection": {
+        "properties": {
+          "file_id": {
+            "pattern": "^[A-Za-z0-9_-]{1,200}$",
+            "title": "File Id",
+            "type": "string"
+          },
+          "folder_id": {
+            "pattern": "^[A-Za-z0-9_-]{1,200}$",
+            "title": "Folder Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "folder_id",
+          "file_id"
+        ],
+        "title": "DriveSelection",
+        "type": "object"
+      },
       "DuplicateCheckRequest": {
         "properties": {
           "files": {
@@ -12618,6 +12732,58 @@
           "enabled_optional_tools"
         ],
         "title": "ToolsListResponse",
+        "type": "object"
+      },
+      "TopicSource": {
+        "description": "One ordered source selected while designing a learning topic.",
+        "properties": {
+          "available": {
+            "default": true,
+            "title": "Available",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "number"
+          },
+          "excerpt": {
+            "default": "",
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TopicSourceKind"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "position": {
+            "default": 0,
+            "title": "Position",
+            "type": "integer"
+          },
+          "source_id": {
+            "default": "",
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label"
+        ],
+        "title": "TopicSource",
         "type": "object"
       },
       "TopicSourceKind": {
@@ -24631,6 +24797,266 @@
         "summary": "Delete Note Thread",
         "tags": [
           "documents"
+        ]
+      }
+    },
+    "/api/drive-sources": {
+      "get": {
+        "operationId": "overview_api_drive_sources_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "default": "live",
+              "enum": [
+                "live",
+                "demo"
+              ],
+              "title": "Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveOverview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/files": {
+      "get": {
+        "operationId": "files_api_drive_sources_files_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "folder_id",
+            "required": true,
+            "schema": {
+              "title": "Folder Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "default": "live",
+              "enum": [
+                "live",
+                "demo"
+              ],
+              "title": "Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DriveFile"
+                  },
+                  "title": "Response Files Api Drive Sources Files Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Files",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/sources": {
+      "post": {
+        "operationId": "select_api_drive_sources_sources_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "default": "live",
+              "enum": [
+                "live",
+                "demo"
+              ],
+              "title": "Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriveSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicSource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Select",
+        "tags": [
+          "drive-sources"
         ]
       }
     },

@@ -4,6 +4,7 @@
 // ships on dev (frozen at 3cbecb2). Do not evolve this copy; the modern
 // learning home lives in components/learning/LearningDashboard.tsx.
 
+import Link from 'next/link'
 import { pageGridClass } from '@/components/layout/FeaturePage'
 import { useEffect, useState } from 'react'
 import { BookOpen, Route } from 'lucide-react'
@@ -96,6 +97,7 @@ export function ClassicLearningDashboard() {
     >
       {/* The ways in lead the page: everything below them assumes you already
           chose one. Each opens its own introduction before it commits you. */}
+      <Link href={scopedUrl('/learning/drive')} className="mb-4 inline-block text-sm underline">{t('drive.title')}</Link>
       <LearningWays />
       {failed.length > 0 && (
         <LearningErrorState

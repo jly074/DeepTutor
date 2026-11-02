@@ -2023,6 +2023,57 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/drive-sources": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Overview */
+    readonly get: operations["overview_api_drive_sources_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/drive-sources/files": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Files */
+    readonly get: operations["files_api_drive_sources_files_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/drive-sources/sources": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Select */
+    readonly post: operations["select_api_drive_sources_sources_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/file-preview/pdf": {
     readonly parameters: {
       readonly query?: never;
@@ -13845,6 +13896,58 @@ export interface components {
       /** Content */
       readonly content: string;
     };
+    /** DriveFile */
+    readonly DriveFile: {
+      /** Id */
+      readonly id: string;
+      /** Mimetype */
+      readonly mimeType: string;
+      /**
+       * Modifiedtime
+       * @default
+       */
+      readonly modifiedTime: string;
+      /** Name */
+      readonly name: string;
+      /** Parents */
+      readonly parents?: readonly string[];
+      /**
+       * Trashed
+       * @default false
+       */
+      readonly trashed: boolean;
+      /**
+       * Version
+       * @default
+       */
+      readonly version: string;
+    };
+    /** DriveOverview */
+    readonly DriveOverview: {
+      /** Allowed Folders */
+      readonly allowed_folders: readonly string[];
+      /** Simulated */
+      readonly simulated: boolean;
+      /** Sources */
+      readonly sources: readonly components["schemas"]["TopicSource"][];
+      /**
+       * State
+       * @enum {string}
+       */
+      readonly state:
+        | "not_connected"
+        | "needs_authorization"
+        | "mock"
+        | "queryable"
+        | "blocked";
+    };
+    /** DriveSelection */
+    readonly DriveSelection: {
+      /** File Id */
+      readonly file_id: string;
+      /** Folder Id */
+      readonly folder_id: string;
+    };
     /** DuplicateCheckRequest */
     readonly DuplicateCheckRequest: {
       /** Files */
@@ -17552,6 +17655,43 @@ export interface components {
       readonly tools: readonly components["schemas"]["BuiltinToolPayload"][];
     };
     /**
+     * TopicSource
+     * @description One ordered source selected while designing a learning topic.
+     */
+    readonly TopicSource: {
+      /**
+       * Available
+       * @default true
+       */
+      readonly available: boolean;
+      /** Created At */
+      readonly created_at?: number;
+      /**
+       * Excerpt
+       * @default
+       */
+      readonly excerpt: string;
+      /** Id */
+      readonly id: string;
+      readonly kind: components["schemas"]["TopicSourceKind"];
+      /** Label */
+      readonly label: string;
+      /** Metadata */
+      readonly metadata?: {
+        readonly [key: string]: unknown;
+      };
+      /**
+       * Position
+       * @default 0
+       */
+      readonly position: number;
+      /**
+       * Source Id
+       * @default
+       */
+      readonly source_id: string;
+    };
+    /**
      * TopicSourceKind
      * @description What a learner may point a mastery goal at.
      *
@@ -18986,6 +19126,9 @@ export type SchemaDocumentResponse = components["schemas"]["DocumentResponse"];
 export type SchemaDocumentSummaryResponse =
   components["schemas"]["DocumentSummaryResponse"];
 export type SchemaDocWriteRequest = components["schemas"]["DocWriteRequest"];
+export type SchemaDriveFile = components["schemas"]["DriveFile"];
+export type SchemaDriveOverview = components["schemas"]["DriveOverview"];
+export type SchemaDriveSelection = components["schemas"]["DriveSelection"];
 export type SchemaDuplicateCheckRequest =
   components["schemas"]["DuplicateCheckRequest"];
 export type SchemaDuplicateFileQuery =
@@ -19340,6 +19483,7 @@ export type SchemaToolParameterPayload =
   components["schemas"]["ToolParameterPayload"];
 export type SchemaToolsListResponse =
   components["schemas"]["ToolsListResponse"];
+export type SchemaTopicSource = components["schemas"]["TopicSource"];
 export type SchemaTopicSourceKind = components["schemas"]["TopicSourceKind"];
 export type SchemaTopicSourceRequest =
   components["schemas"]["TopicSourceRequest"];
@@ -23879,6 +24023,116 @@ export interface operations {
         };
         content: {
           readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly overview_api_drive_sources_get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["DriveOverview"];
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly files_api_drive_sources_files_get: {
+    readonly parameters: {
+      readonly query: {
+        readonly folder_id: string;
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": readonly components["schemas"]["DriveFile"][];
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly select_api_drive_sources_sources_post: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["DriveSelection"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["TopicSource"];
         };
       };
       /** @description Validation Error */

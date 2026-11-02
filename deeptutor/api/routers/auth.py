@@ -696,6 +696,13 @@ def _learning_surface_for_path(
     path: str, method: str = "GET", *, route_path: str | None = None
 ) -> str:
     normalized = "/" + str(path or "").lstrip("/")
+    # Only metadata listing and local reference selection, never connector setup.
+    if (method.upper(), route_path) in {
+        ("GET", "/api/drive-sources"),
+        ("GET", "/api/drive-sources/files"),
+        ("POST", "/api/drive-sources/sources"),
+    }:
+        return "reading"
     for root, surface in (
         ("/api/reading", "reading"),
         ("/api/courses", "reading"),

@@ -48,6 +48,7 @@ export function LearningDashboard() {
       subtitle={t('navigation.learningDescription')}
       action={<LearningCreateMenu />}
     >
+      <Link href={scopedUrl('/learning/drive')} className="mb-4 inline-block text-sm underline">{t('drive.title')}</Link>
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1" role="group" aria-label={t('navigation.learningFilter')}>
           {[{ kind: 'all', title: 'navigation.allLearning' }, ...LEARNING_SURFACES].map(surface => <button key={surface.kind} type="button" aria-pressed={kind === surface.kind} onClick={() => { setKind(surface.kind as LearningKind | 'all'); setLimit(24) }} className={`rounded-full px-3 py-1.5 text-xs transition-colors ${kind === surface.kind ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60'}`}>{t(surface.title)}</button>)}

@@ -443,6 +443,19 @@ def build_topic_materials(sources: Iterable[Any]) -> TopicMaterials:
         # readable material would only invite the tutor to "read" it.
         if kind == "goal":
             continue
+        # Remote references are metadata, never a local file or readable text.
+        # Enforce this even if a caller incorrectly sets available=True.
+        if (getattr(source, "metadata", {}) or {}).get("provider") == "google_drive":
+            result.materials.append(
+                TopicMaterial(
+                    sid="",
+                    kind=kind,
+                    name=label,
+                    available=False,
+                    note="Drive reference only; content has not been downloaded",
+                )
+            )
+            continue
         if not available or not source_id:
             result.materials.append(
                 TopicMaterial(
