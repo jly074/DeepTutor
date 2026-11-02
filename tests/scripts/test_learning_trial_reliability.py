@@ -104,7 +104,7 @@ def test_real_cancel_cleans_child_tree_before_unlock(tmp_path):
         pid = int(wait_file(ready))
         assert lock.exists() and guard.exists() and alive(pid)
         os.killpg(proc.pid, signal.SIGINT)
-        assert proc.wait(timeout=15) == 0
+        assert proc.wait(timeout=15) == 1  # outer subprocess.run raises for cancellation exit=130
         assert not alive(pid)
         assert not lock.exists() and not guard.exists()
     finally:

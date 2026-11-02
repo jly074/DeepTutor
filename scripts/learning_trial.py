@@ -157,6 +157,30 @@ def execute_supervised(command, cwd, env):
         signal.signal(signal.SIGINT, previous)
 
 
+def read_failures(path):
+    if not path.exists():
+        return {}
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    # Preserve the previous single-stage format when upgrading a trial checkout.
+    stages = saved.get(
+        "stages", {saved["action"]: "pending_or_failed"} if "action" in saved else None
+    )
+    if not isinstance(stages, dict) or any(
+        key not in ("update", "deps", "start") for key in stages
+    ):
+        raise UpdateError("Invalid failure record; preserve it for manual inspection.")
+    return stages
+
+
+def write_failures(path, stages):
+    if not stages:
+        path.unlink(missing_ok=True)
+        return
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"stages": stages}), encoding="utf-8")
+    os.replace(temporary, path)
+
+
 def lifecycle(repo, action):
     git, marker, _ = paths(repo)
     if not marker.exists():
@@ -169,19 +193,19 @@ def lifecycle(repo, action):
     if not home.is_dir() or home.is_symlink():
         raise UpdateError("Trial home missing or replaced; inspect before continuing.")
     failure = marker.with_name("learning-trial-failure.json")
-    if failure.exists() and action != "status":
-        prior = json.loads(failure.read_text(encoding="utf-8"))["action"]
-        if action == "start" or (action == "deps" and prior == "update"):
-            raise UpdateError(
-                f"Previous {prior} did not succeed. Retry update, or deps after a deps/start failure, before start."
-            )
-    if action != "status":
-        failure.write_text(
-            json.dumps({"action": action, "state": "pending_or_failed"}), encoding="utf-8"
+    failures = read_failures(failure)
+    if action == "start" and failures or action == "deps" and "update" in failures:
+        prior = ",".join(failures)
+        raise UpdateError(
+            f"Previous {prior} did not succeed. Retry update for update failures; successful deps clears deps/start failures."
         )
+    if action != "status":
+        failures[action] = "pending_or_failed"
+        write_failures(failure, failures)
     if action == "update":
         update(git, config["branch"])
-        failure.unlink()
+        failures.pop("update", None)
+        write_failures(failure, failures)
         return
     sha = git.run(["rev-parse", "HEAD"]).stdout
     print(f"Version={sha}\nBranch={config['branch']}\nTrial data={home / 'runtime'}", flush=True)
@@ -226,7 +250,10 @@ def lifecycle(repo, action):
             repo,
             env,
         )
-    failure.unlink()
+    failures.pop(action, None)
+    if action == "deps":
+        failures.pop("start", None)
+    write_failures(failure, failures)
 
 
 def main(argv=None):
@@ -255,8 +282,11 @@ def main(argv=None):
         subprocess.SubprocessError,
     ) as exc:
         # Do not echo subprocess stderr: it may contain credential-bearing URLs.
+        detail = str(exc) if isinstance(exc, UpdateError) else type(exc).__name__
+        if isinstance(exc, subprocess.CalledProcessError):
+            detail += f" exit={exc.returncode} (130 means cancelled)"
         print(
-            f"BLOCKED: {exc if isinstance(exc, UpdateError) else type(exc).__name__}. No automatic rollback; inspect status before retry.",
+            f"BLOCKED: {detail}. No automatic rollback; inspect status before retry.",
             file=sys.stderr,
         )
         return 1
