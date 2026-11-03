@@ -9,9 +9,19 @@ from __future__ import annotations
 
 import asyncio
 
-from fastapi import APIRouter, HTTPException, Request
+# Manual source intake shares the board's authenticated account and workspace.
+import sqlite3
+
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
+from deeptutor.services.announcement_inbox import (
+    AnnouncementInbox,
+    ConvertAnnouncement,
+    InboxError,
+    ReceiveAnnouncement,
+    ReviewAnnouncement,
+)
 from deeptutor.services.task_board import (
     CreateCard,
     LinkStatus,
@@ -137,3 +147,33 @@ async def link_status(session_id: str, payload: LinkStatus, request: Request) ->
     payload.workspace_id = await require_session(session_id, payload.workspace_id, workspace_id)
     board = await asyncio.to_thread(get_task_board_store().link_status, session_id, payload)
     return workspace_board(board, workspace_id)
+
+
+def inbox_call(request, operation):
+    try:
+        inbox = AnnouncementInbox(get_task_board_store(), board_workspace(request))
+        return operation(inbox)
+    except InboxError as exc:
+        raise HTTPException(exc.status, detail={"code": exc.code}) from None
+    except sqlite3.Error:
+        raise HTTPException(409, detail={"code": "storage_unavailable"}) from None
+
+
+@router.get("/inbox")
+def list_inbox(request: Request, before: int = Query(default=0, ge=0, le=9223372036854775807)):
+    return inbox_call(request, lambda inbox: inbox.list(before))
+
+
+@router.post("/inbox")
+def receive_announcement(payload: ReceiveAnnouncement, request: Request):
+    return inbox_call(request, lambda inbox: inbox.receive(payload))
+
+
+@router.patch("/inbox/{item_id}")
+def review_announcement(item_id: str, payload: ReviewAnnouncement, request: Request):
+    return inbox_call(request, lambda inbox: inbox.review(item_id, payload))
+
+
+@router.post("/inbox/{item_id}/task")
+def convert_announcement(item_id: str, payload: ConvertAnnouncement, request: Request):
+    return inbox_call(request, lambda inbox: inbox.convert(item_id, payload))

@@ -99,6 +99,7 @@ export function ClassicLearningDashboard() {
           chose one. Each opens its own introduction before it commits you. */}
       <Link href={scopedUrl('/learning/drive')} className="mb-4 inline-block text-sm underline">{t('drive.title')}</Link>
       <Link href={scopedUrl('/learning/notion')} className="mb-4 ml-4 inline-block text-sm underline">{t('notion.title')}</Link>
+      <Link href={scopedUrl('/learning/inbox')} className="mb-4 ml-4 inline-block text-sm underline">{t('inbox.title')}</Link>
       <LearningWays />
       {failed.length > 0 && (
         <LearningErrorState

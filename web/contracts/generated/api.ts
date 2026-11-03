@@ -11143,6 +11143,58 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/task-board/inbox": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** List Inbox */
+    readonly get: operations["list_inbox_api_task_board_inbox_get"];
+    readonly put?: never;
+    /** Receive Announcement */
+    readonly post: operations["receive_announcement_api_task_board_inbox_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/inbox/{item_id}": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    /** Review Announcement */
+    readonly patch: operations["review_announcement_api_task_board_inbox__item_id__patch"];
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/inbox/{item_id}/task": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Convert Announcement */
+    readonly post: operations["convert_announcement_api_task_board_inbox__item_id__task_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/task-board/sessions/{session_id}": {
     readonly parameters: {
       readonly query?: never;
@@ -13434,6 +13486,11 @@ export interface components {
       readonly name: string;
       /** Server Url */
       readonly server_url: string;
+    };
+    /** ConvertAnnouncement */
+    readonly ConvertAnnouncement: {
+      /** Revision */
+      readonly revision: number;
     };
     /** CreateBookRequest */
     readonly CreateBookRequest: {
@@ -16912,6 +16969,31 @@ export interface components {
       /** Expected Revision */
       readonly expected_revision?: number | null;
     };
+    /** ReceiveAnnouncement */
+    readonly ReceiveAnnouncement: {
+      /** Body */
+      readonly body: string;
+      /** Consent */
+      readonly consent: boolean;
+      /** Due Date */
+      readonly due_date?: string | null;
+      /**
+       * Simulated
+       * @default false
+       */
+      readonly simulated: boolean;
+      /** Source Key */
+      readonly source_key: string;
+      /** Source Label */
+      readonly source_label: string;
+      /**
+       * Source Url
+       * @default
+       */
+      readonly source_url: string;
+      /** Title */
+      readonly title: string;
+    };
     /** RegenerateBlockRequest */
     readonly RegenerateBlockRequest: {
       /** Block Id */
@@ -17029,6 +17111,13 @@ export interface components {
       readonly book_id: string;
       /** Expected Revision */
       readonly expected_revision?: number | null;
+    };
+    /** ReviewAnnouncement */
+    readonly ReviewAnnouncement: {
+      /** Reviewed */
+      readonly reviewed: boolean;
+      /** Revision */
+      readonly revision: number;
     };
     /** ReviewCardRequest */
     readonly ReviewCardRequest: {
@@ -19305,6 +19394,8 @@ export type SchemaConnectSubagentRequest =
   components["schemas"]["ConnectSubagentRequest"];
 export type SchemaConnectWeKnoraRequest =
   components["schemas"]["ConnectWeKnoraRequest"];
+export type SchemaConvertAnnouncement =
+  components["schemas"]["ConvertAnnouncement"];
 export type SchemaCreateBookRequest =
   components["schemas"]["CreateBookRequest"];
 export type SchemaCreateCalendar = components["schemas"]["CreateCalendar"];
@@ -19619,6 +19710,8 @@ export type SchemaReadingSessionRenameRequest =
 export type SchemaReadingViewport = components["schemas"]["ReadingViewport"];
 export type SchemaRebuildBookRequest =
   components["schemas"]["RebuildBookRequest"];
+export type SchemaReceiveAnnouncement =
+  components["schemas"]["ReceiveAnnouncement"];
 export type SchemaRegenerateBlockRequest =
   components["schemas"]["RegenerateBlockRequest"];
 export type SchemaRegisterRequest = components["schemas"]["RegisterRequest"];
@@ -19632,6 +19725,8 @@ export type SchemaRenderCleanupPayload =
 export type SchemaResolveRequest = components["schemas"]["ResolveRequest"];
 export type SchemaResumeBookRequest =
   components["schemas"]["ResumeBookRequest"];
+export type SchemaReviewAnnouncement =
+  components["schemas"]["ReviewAnnouncement"];
 export type SchemaReviewCardRequest =
   components["schemas"]["ReviewCardRequest"];
 export type SchemaReviewDay = components["schemas"]["ReviewDay"];
@@ -44456,6 +44551,156 @@ export interface operations {
       };
     };
     readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly list_inbox_api_task_board_inbox_get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly before?: number;
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly receive_announcement_api_task_board_inbox_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ReceiveAnnouncement"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly review_announcement_api_task_board_inbox__item_id__patch: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly item_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ReviewAnnouncement"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly convert_announcement_api_task_board_inbox__item_id__task_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly item_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ConvertAnnouncement"];
+      };
+    };
     readonly responses: {
       /** @description Successful Response */
       readonly 200: {
