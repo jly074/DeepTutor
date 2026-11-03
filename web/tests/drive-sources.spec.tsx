@@ -21,7 +21,7 @@ it('starts disconnected and only lists after an explicit demo refresh', async ()
   expect(await screen.findByText('drive.simulated')).toBeVisible()
   expect(screen.getByText('drive.demoNotice')).toBeVisible()
   expect(screen.getByRole('button', { name: 'drive.refresh' })).toBeEnabled()
-  expect(request.mock.calls.every(call => call[0] === '')).toBe(true)
+  expect(request.mock.calls.every(call => call[0] === '' || call[0] === '/oauth/status')).toBe(true)
 })
 it('saves a reference with explicit workspace and shows no teaching content', async () => {
   let saved = false

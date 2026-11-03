@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
+import DriveAuthorization from './DriveAuthorization'
 import { scopedUrl } from '@/lib/workspace-scope'
 import { driveRequest, DriveRequestError, type DriveMode, type DriveState, type DriveFile, type DriveOverview } from '@/lib/drive-sources-api'
 
@@ -46,6 +47,7 @@ function DriveModeView({ workspaceId, mode }: { workspaceId: string; mode: Drive
     finally { setBusy(false) }
   }
   return <div className="space-y-5">
+    {mode === 'live' && <DriveAuthorization key={state || "loading"} workspaceId={workspaceId} />}
     <p role="status" className="rounded-lg border border-border p-3 font-medium">{state ? t(stateLabels[state]) : t('Loading...')}</p>
     <p className="text-sm text-muted-foreground">{mode === 'demo' ? t('drive.demoNotice') : t('drive.liveNotice')}</p>
     <p className="text-sm text-muted-foreground">{t('drive.metadataOnly')}</p>

@@ -2057,6 +2057,74 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/drive-sources/oauth/complete": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Oauth Complete */
+    readonly post: operations["oauth_complete_api_drive_sources_oauth_complete_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/drive-sources/oauth/disconnect": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Oauth Disconnect */
+    readonly post: operations["oauth_disconnect_api_drive_sources_oauth_disconnect_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/drive-sources/oauth/start": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Oauth Start */
+    readonly post: operations["oauth_start_api_drive_sources_oauth_start_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/drive-sources/oauth/status": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Oauth Status */
+    readonly get: operations["oauth_status_api_drive_sources_oauth_status_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/drive-sources/sources": {
     readonly parameters: {
       readonly query?: never;
@@ -15921,6 +15989,35 @@ export interface components {
        */
       readonly kind: string;
     };
+    /** OAuthComplete */
+    readonly OAuthComplete: {
+      /** Browser Nonce */
+      readonly browser_nonce: string;
+      /**
+       * Code
+       * @default
+       */
+      readonly code: string;
+      /**
+       * Error
+       * @default
+       */
+      readonly error: string;
+      /** State */
+      readonly state: string;
+    };
+    /** OAuthStart */
+    readonly OAuthStart: {
+      /** Browser Nonce */
+      readonly browser_nonce: string;
+      /**
+       * Consent
+       * @constant
+       */
+      readonly consent: true;
+      /** Folder Id */
+      readonly folder_id: string;
+    };
     /**
      * Occurrence
      * @description One rendered instance of a stored event.
@@ -19325,6 +19422,8 @@ export type SchemaNotebookRecordInput =
 export type SchemaNotebookReference =
   components["schemas"]["NotebookReference"];
 export type SchemaNoteGeneration = components["schemas"]["NoteGeneration"];
+export type SchemaOAuthComplete = components["schemas"]["OAuthComplete"];
+export type SchemaOAuthStart = components["schemas"]["OAuthStart"];
 export type SchemaOccurrence = components["schemas"]["Occurrence"];
 export type SchemaOccurrenceList = components["schemas"]["OccurrenceList"];
 export type SchemaOrganizeNotesRequest =
@@ -24128,6 +24227,146 @@ export interface operations {
         };
         content: {
           readonly "application/json": readonly components["schemas"]["DriveFile"][];
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly oauth_complete_api_drive_sources_oauth_complete_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["OAuthComplete"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly oauth_disconnect_api_drive_sources_oauth_disconnect_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly oauth_start_api_drive_sources_oauth_start_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["OAuthStart"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly oauth_status_api_drive_sources_oauth_status_get: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
         };
       };
       /** @description Validation Error */

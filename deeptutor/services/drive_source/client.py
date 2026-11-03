@@ -35,14 +35,14 @@ class DrivePage(BaseModel):
 
 
 class GoogleDriveClient:
-    """Only files.list metadata; explicit token injection, no OAuth/token storage.
+    """Only files.list metadata; token injection from the owner/workspace OAuth store.
 
-    Instantiate only after a separately authorized account integration exists.
-    No app route in this iteration can configure or activate this transport.
+    No content download, write operation, recursive scan or automatic refresh.
     """
 
-    def __init__(self, token: Callable[[], str | None], transport=None):
+    def __init__(self, token: Callable[[], str | None], transport=None, on_unauthorized=None):
         self.token, self.transport = token, transport
+        self.on_unauthorized = on_unauthorized
 
     async def list_page(self, folder: str, page_token: str = "") -> DrivePage:
         # Validate again at the transport boundary, before obtaining a token.
@@ -80,6 +80,8 @@ class GoogleDriveClient:
             404: "not_found",
             429: "rate_limited",
         }
+        if response.status_code == 401 and self.on_unauthorized is not None:
+            self.on_unauthorized()
         if response.status_code in errors:
             raise DriveFailure(errors[response.status_code], response.status_code)
         if response.status_code != 200:

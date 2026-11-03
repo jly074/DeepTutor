@@ -8672,6 +8672,66 @@
         "title": "NotebookReference",
         "type": "object"
       },
+      "OAuthComplete": {
+        "properties": {
+          "browser_nonce": {
+            "maxLength": 200,
+            "minLength": 32,
+            "title": "Browser Nonce",
+            "type": "string"
+          },
+          "code": {
+            "default": "",
+            "maxLength": 8192,
+            "title": "Code",
+            "type": "string"
+          },
+          "error": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Error",
+            "type": "string"
+          },
+          "state": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "browser_nonce"
+        ],
+        "title": "OAuthComplete",
+        "type": "object"
+      },
+      "OAuthStart": {
+        "properties": {
+          "browser_nonce": {
+            "pattern": "^[A-Za-z0-9_-]{32,200}$",
+            "title": "Browser Nonce",
+            "type": "string"
+          },
+          "consent": {
+            "const": true,
+            "title": "Consent",
+            "type": "boolean"
+          },
+          "folder_id": {
+            "pattern": "^[A-Za-z0-9_-]{1,200}$",
+            "title": "Folder Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "folder_id",
+          "browser_nonce",
+          "consent"
+        ],
+        "title": "OAuthStart",
+        "type": "object"
+      },
       "Occurrence": {
         "description": "One rendered instance of a stored event.",
         "properties": {
@@ -24966,6 +25026,278 @@
           }
         },
         "summary": "Files",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/oauth/complete": {
+      "post": {
+        "operationId": "oauth_complete_api_drive_sources_oauth_complete_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthComplete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oauth Complete",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/oauth/disconnect": {
+      "post": {
+        "operationId": "oauth_disconnect_api_drive_sources_oauth_disconnect_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oauth Disconnect",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/oauth/start": {
+      "post": {
+        "operationId": "oauth_start_api_drive_sources_oauth_start_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oauth Start",
+        "tags": [
+          "drive-sources"
+        ]
+      }
+    },
+    "/api/drive-sources/oauth/status": {
+      "get": {
+        "operationId": "oauth_status_api_drive_sources_oauth_status_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oauth Status",
         "tags": [
           "drive-sources"
         ]

@@ -51,6 +51,9 @@ function redirectToLogin(
 export function proxy(req: NextRequest): NextResponse {
   const { pathname, search } = req.nextUrl;
 
+  // Static bridge strips the code URL; authenticated completion happens separately.
+  if (pathname === "/drive-oauth-callback") return NextResponse.next();
+
   if (isCodexCallbackPath(pathname)) {
     return NextResponse.rewrite(
       new URL(CODEX_CALLBACK_API_PATH + search, API_BASE_URL),

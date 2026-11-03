@@ -29,8 +29,9 @@ class DriveConnection:
 
 
 class DriveSources:
-    def __init__(self, db_path: Path, connection: DriveConnection, client=None):
+    def __init__(self, db_path: Path, connection: DriveConnection, client=None, *, history=False):
         self.db_path, self.connection, self.client = db_path, connection, client
+        self.history = history
 
     def assert_scope(self):
         if (
@@ -68,20 +69,26 @@ class DriveSources:
     def saved(self) -> list[TopicSource]:
         c = self.connection
         with self._connect() as conn:
-            rows = conn.execute(
-                "SELECT source_json FROM drive_source_refs WHERE owner=? AND workspace=? AND connection_id=? ORDER BY file_id",
-                (c.owner, c.workspace, c.connection_id),
-            ).fetchall()
+            if self.history and not c.simulated:
+                rows = conn.execute(
+                    "SELECT source_json FROM drive_source_refs WHERE owner=? AND workspace=? AND connection_id != 'synthetic-demo' ORDER BY connection_id,file_id",
+                    (c.owner, c.workspace),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT source_json FROM drive_source_refs WHERE owner=? AND workspace=? AND connection_id=? ORDER BY file_id",
+                    (c.owner, c.workspace, c.connection_id),
+                ).fetchall()
         return [TopicSource.model_validate_json(row[0]) for row in rows]
 
     def _allow(self, folder: str):
         self.assert_scope()
         if not re.fullmatch(ID_PATTERN, folder):
             raise DriveFailure("invalid_folder", 422)
-        if folder not in self.connection.allowed_folders:
-            raise DriveFailure("access_denied", 403)
         if self.state in ("not_connected", "needs_authorization"):
             raise DriveFailure("needs_authorization", 401)
+        if folder not in self.connection.allowed_folders:
+            raise DriveFailure("access_denied", 403)
         if self.state == "blocked":
             raise DriveFailure("unavailable", 503)
 
@@ -151,6 +158,37 @@ def get_drive_sources(mode: str = "live") -> DriveSources:
     from deeptutor.services.session import get_sqlite_session_store
 
     demo = mode == "demo"
+    if not demo:
+        from .client import GoogleDriveClient
+        from .oauth import get_drive_oauth
+
+        oauth = get_drive_oauth()
+        status = oauth.status()["state"]
+        data = oauth.store.read() if status == "connected" else {}
+        identity = data.get("connection_id", "google-drive-unconfigured")
+
+        def token():
+            current = oauth.store.read()
+            if current.get("connection_id") != identity:
+                raise DriveFailure("needs_authorization", 401)
+            return oauth.token()
+
+        connection = DriveConnection(
+            owner=get_current_user().scope.user_id,
+            workspace=current_workspace_id(),
+            connection_id=identity,
+            allowed_folders=(data["folder"],) if data else (),
+            configured=status != "not_configured",
+            authorized=status == "connected",
+        )
+        return DriveSources(
+            get_sqlite_session_store().db_path,
+            connection,
+            GoogleDriveClient(token, on_unauthorized=lambda: oauth.store.invalidate(identity))
+            if status == "connected"
+            else None,
+            history=True,
+        )
     connection = DriveConnection(
         owner=get_current_user().scope.user_id,
         workspace=current_workspace_id(),

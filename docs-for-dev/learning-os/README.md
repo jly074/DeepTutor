@@ -1,3 +1,5 @@
+> Drive authorization milestone (2026-11-03): [implementation, setup gates and acceptance](drive-oauth.md). Real Google/Windows acceptance is pending.
+
 > Latest security milestone (2026-11-03): [provider storage and integration prerequisites](security-prerequisites.md). Earlier acceptance and patch instructions below are historical.
 
 # Question source handoff — 2026-11-02

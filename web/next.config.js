@@ -93,6 +93,8 @@ const APP_VERSION = (() => {
 const nextConfig = {
   // Keep trial checkouts clean; repository agent instructions are maintained manually.
   agentRules: false,
+  // OAuth query codes must not be written to Next development access logs.
+  logging: { incomingRequests: { ignore: [/^\/drive-oauth-callback(?:\?|$)/] } },
   // Keep the production build used by `deeptutor start` separate from the
   // `.next` development cache used by the explicit `deeptutor start --dev`.
   // Without separate directories either command can invalidate the other

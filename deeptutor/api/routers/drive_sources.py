@@ -1,8 +1,8 @@
-"""Manual metadata-only Drive reference flow; real login is not configured here."""
+"""Manual metadata-only Drive references and explicit personal OAuth lifecycle."""
 
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from deeptutor.learning.models import TopicSource
@@ -61,5 +61,66 @@ async def files(folder_id: str, mode: Mode = "live"):
 async def select(payload: DriveSelection, mode: Mode = "live"):
     try:
         return await get_drive_sources(mode).select(payload.folder_id, payload.file_id)
+    except DriveFailure as exc:
+        raise failure(exc) from None
+
+
+class OAuthStart(BaseModel):
+    folder_id: str = Field(pattern=ID_PATTERN)
+    browser_nonce: str = Field(pattern=r"^[A-Za-z0-9_-]{32,200}$")
+    consent: Literal[True]
+
+
+class OAuthComplete(BaseModel):
+    state: str = Field(min_length=1, max_length=200)
+    browser_nonce: str = Field(min_length=32, max_length=200)
+    code: str = Field(default="", max_length=8192)
+    error: str = Field(default="", max_length=200)
+
+
+@router.get("/oauth/status")
+def oauth_status():
+    from deeptutor.services.drive_source.oauth import get_drive_oauth
+
+    try:
+        return get_drive_oauth().status()
+    except DriveFailure as exc:
+        raise failure(exc) from None
+
+
+@router.post("/oauth/start")
+def oauth_start(payload: OAuthStart, request: Request):
+    from deeptutor.services.drive_source.oauth import get_drive_oauth
+
+    try:
+        return get_drive_oauth().start(
+            payload.folder_id, payload.browser_nonce, request.headers.get("origin", "")
+        )
+    except DriveFailure as exc:
+        raise failure(exc) from None
+
+
+@router.post("/oauth/complete")
+async def oauth_complete(payload: OAuthComplete, request: Request):
+    from deeptutor.services.drive_source.oauth import get_drive_oauth
+
+    try:
+        return await get_drive_oauth().complete(
+            payload.state,
+            payload.browser_nonce,
+            payload.code,
+            payload.error,
+            request.headers.get("origin", ""),
+        )
+    except DriveFailure as exc:
+        raise failure(exc) from None
+
+
+@router.post("/oauth/disconnect")
+def oauth_disconnect(request: Request):
+    from deeptutor.services.drive_source.oauth import get_drive_oauth
+
+    try:
+        return get_drive_oauth().disconnect(request.headers.get("origin", ""))
     except DriveFailure as exc:
         raise failure(exc) from None

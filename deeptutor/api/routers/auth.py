@@ -696,8 +696,12 @@ def _learning_surface_for_path(
     path: str, method: str = "GET", *, route_path: str | None = None
 ) -> str:
     normalized = "/" + str(path or "").lstrip("/")
-    # Only metadata listing and local reference selection, never connector setup.
+    # Metadata and explicit personal OAuth only; no administrator credential setup.
     if (method.upper(), route_path) in {
+        ("GET", "/api/drive-sources/oauth/status"),
+        ("POST", "/api/drive-sources/oauth/start"),
+        ("POST", "/api/drive-sources/oauth/complete"),
+        ("POST", "/api/drive-sources/oauth/disconnect"),
         ("GET", "/api/drive-sources"),
         ("GET", "/api/drive-sources/files"),
         ("POST", "/api/drive-sources/sources"),
