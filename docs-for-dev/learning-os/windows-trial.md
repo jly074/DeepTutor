@@ -6,17 +6,21 @@
 
 本流程已有[第四輪可靠性補強](trial-reliability.md)：npm 無 shell 引數、收尾 guard 與失敗狀態阻擋。
 以下首次／更新指令不變；Windows 實機仍待驗。
+2026-11-03 整體核對另補齊 Next.js 16.4.4 的標準 `root-params` 型別宣告，
+避免預設開發啟動因框架新增該行而使 checkout 變 dirty；dirty 保護仍完整保留。
 
-## 發布前提（目前仍受阻）
+## 發布前提（2026-11-03 核對）
 
-2026-11-02 唯讀 `git ls-remote --heads origin` 顯示遠端僅有 `main`，
-HEAD 為 `f7aed0744c36c5afef16a4261c31ebee1208cac2`。第一輪 `a8fb61400`、
-第二輪 `93f952439` 與本文件所在第三輪尚未 push。
-**現在 clone main 不會取得這三輪功能。** 需另行批准發布到指定試用分支，
-建議名稱 `learning-os-trial`；名稱只是建議，尚未建立遠端分支。
-發布完成後應提供實際分支與完整 commit SHA，供下列操作核對。
+遠端 `learning-os-trial` 已存在，目前是
+`b6a0dd58c08a551b896e5a56f87ff0aa40d1447c`；`main` 仍是
+`f7aed0744c36c5afef16a4261c31ebee1208cac2`。
+今天安全設定、Drive OAuth、Notion 快照及公告收件四個提交尚未 push，
+功能提交終點為 `0977e647f33020ec7021b25e7aae32fae26cf26b`。
+**現在更新或 clone 試用分支，仍不會取得今天的新功能。**
+待使用者查收並另行批准 push 後，以當次回報的最新完整 SHA 為驗收版本，
+其中可能包含整體核對的修補提交。不要把 `main` 當成試用版本。
 
-## 明日準備
+## 本機準備
 
 Windows 電腦安裝 Git、Python 3.12（支援 3.11–3.14）、Node.js 22 LTS，
 能存取 GitHub、PyPI 與 npm。使用新的 checkout 與新的試用資料目錄；
@@ -27,14 +31,14 @@ Windows 電腦安裝 Git、Python 3.12（支援 3.11–3.14）、Node.js 22 LTS�
 ## 首次取得（遠端發布之後）
 
 在 PowerShell 依序執行，每一步成功才執行下一步。
-將 `PUBLISHED_BRANCH` 改成已確認發布的分支，不能直接使用占位文字。
+以下使用既有 `learning-os-trial` 分支，但應等目標版本已發布並核對 SHA 才執行。
 `DeepTutorTrial` 及 `DeepTutorTrialData` 必須是尚不存在的新路徑。
 
 ```powershell
 cd $env:USERPROFILE
-git clone --single-branch --branch PUBLISHED_BRANCH https://github.com/jly074/DeepTutor.git DeepTutorTrial
+git clone --single-branch --branch learning-os-trial https://github.com/jly074/DeepTutor.git DeepTutorTrial
 cd DeepTutorTrial
-py -3.12 scripts/learning_trial.py setup --branch PUBLISHED_BRANCH --home "$env:USERPROFILE\DeepTutorTrialData"
+py -3.12 scripts/learning_trial.py setup --branch learning-os-trial --home "$env:USERPROFILE\DeepTutorTrialData"
 py -3.12 scripts/learning_trial.py status
 py -3.12 scripts/learning_trial.py deps
 py -3.12 scripts/learning_trial.py start
