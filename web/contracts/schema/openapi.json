@@ -239,6 +239,41 @@
         "title": "AdminResetPasswordRequest",
         "type": "object"
       },
+      "AdoptDeadline": {
+        "additionalProperties": false,
+        "properties": {
+          "announcement_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Announcement Id",
+            "type": "string"
+          },
+          "announcement_revision": {
+            "minimum": 1.0,
+            "title": "Announcement Revision",
+            "type": "integer"
+          },
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_updated_at": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Expected Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm",
+          "announcement_id",
+          "announcement_revision",
+          "expected_updated_at"
+        ],
+        "title": "AdoptDeadline",
+        "type": "object"
+      },
       "AnchorThreadRequest": {
         "properties": {
           "block_id": {
@@ -6923,6 +6958,46 @@
           }
         },
         "title": "LightRagVisionModel",
+        "type": "object"
+      },
+      "LinkEvidence": {
+        "additionalProperties": false,
+        "properties": {
+          "fingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "live",
+              "demo"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "drive",
+              "notion"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "source_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "mode",
+          "source_id",
+          "fingerprint"
+        ],
+        "title": "LinkEvidence",
         "type": "object"
       },
       "LinkFolderRequest": {
@@ -66878,6 +66953,314 @@
           }
         },
         "summary": "Update Card",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/deadline-source": {
+      "post": {
+        "operationId": "task_adopt_deadline_api_task_board_cards__card_id__deadline_source_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdoptDeadline"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Adopt Deadline",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/detail": {
+      "get": {
+        "operationId": "task_detail_api_task_board_cards__card_id__detail_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Detail",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/evidence": {
+      "post": {
+        "operationId": "task_link_evidence_api_task_board_cards__card_id__evidence_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkEvidence"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Link Evidence",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/evidence-choices": {
+      "get": {
+        "operationId": "task_evidence_choices_api_task_board_cards__card_id__evidence_choices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Evidence Choices",
         "tags": [
           "task-board"
         ]

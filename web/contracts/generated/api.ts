@@ -11109,6 +11109,74 @@ export interface paths {
     readonly patch: operations["update_card_api_task_board_cards__card_id__patch"];
     readonly trace?: never;
   };
+  readonly "/api/task-board/cards/{card_id}/deadline-source": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Task Adopt Deadline */
+    readonly post: operations["task_adopt_deadline_api_task_board_cards__card_id__deadline_source_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/cards/{card_id}/detail": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Task Detail */
+    readonly get: operations["task_detail_api_task_board_cards__card_id__detail_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/cards/{card_id}/evidence": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Task Link Evidence */
+    readonly post: operations["task_link_evidence_api_task_board_cards__card_id__evidence_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/cards/{card_id}/evidence-choices": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Task Evidence Choices */
+    readonly get: operations["task_evidence_choices_api_task_board_cards__card_id__evidence_choices_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/task-board/colors": {
     readonly parameters: {
       readonly query?: never;
@@ -12184,6 +12252,20 @@ export interface components {
     readonly AdminResetPasswordRequest: {
       /** New Password */
       readonly new_password: string;
+    };
+    /** AdoptDeadline */
+    readonly AdoptDeadline: {
+      /** Announcement Id */
+      readonly announcement_id: string;
+      /** Announcement Revision */
+      readonly announcement_revision: number;
+      /**
+       * Confirm
+       * @constant
+       */
+      readonly confirm: true;
+      /** Expected Updated At */
+      readonly expected_updated_at: string;
     };
     /** AnchorThreadRequest */
     readonly AnchorThreadRequest: {
@@ -15147,6 +15229,23 @@ export interface components {
       readonly last_sync?: string | null;
       /** Path */
       readonly path: string;
+    };
+    /** LinkEvidence */
+    readonly LinkEvidence: {
+      /** Fingerprint */
+      readonly fingerprint: string;
+      /**
+       * Mode
+       * @enum {string}
+       */
+      readonly mode: "live" | "demo";
+      /**
+       * Provider
+       * @enum {string}
+       */
+      readonly provider: "drive" | "notion";
+      /** Source Id */
+      readonly source_id: string;
     };
     /**
      * LinkFolderRequest
@@ -19257,6 +19356,7 @@ export type SchemaAdminCreateUserRequest =
   components["schemas"]["AdminCreateUserRequest"];
 export type SchemaAdminResetPasswordRequest =
   components["schemas"]["AdminResetPasswordRequest"];
+export type SchemaAdoptDeadline = components["schemas"]["AdoptDeadline"];
 export type SchemaAnchorThreadRequest =
   components["schemas"]["AnchorThreadRequest"];
 export type SchemaAnnotationInfo = components["schemas"]["AnnotationInfo"];
@@ -19572,6 +19672,7 @@ export type SchemaLightRagServerConfigUpdate =
 export type SchemaLightRagVisionModel =
   components["schemas"]["LightRagVisionModel"];
 export type SchemaLinkedFolderInfo = components["schemas"]["LinkedFolderInfo"];
+export type SchemaLinkEvidence = components["schemas"]["LinkEvidence"];
 export type SchemaLinkFolderRequest =
   components["schemas"]["LinkFolderRequest"];
 export type SchemaLinkStatus = components["schemas"]["LinkStatus"];
@@ -44489,6 +44590,154 @@ export interface operations {
         };
         content: {
           readonly "application/json": components["schemas"]["TaskBoard"];
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_adopt_deadline_api_task_board_cards__card_id__deadline_source_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["AdoptDeadline"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_detail_api_task_board_cards__card_id__detail_get: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_link_evidence_api_task_board_cards__card_id__evidence_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["LinkEvidence"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_evidence_choices_api_task_board_cards__card_id__evidence_choices_get: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
         };
       };
       /** @description Validation Error */

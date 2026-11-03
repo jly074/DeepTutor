@@ -152,6 +152,12 @@ class TaskBoardStore:
                 task_id TEXT NOT NULL REFERENCES cards(id),
                 UNIQUE(workspace_id, session_id, task_id)
             );
+            CREATE TABLE IF NOT EXISTS task_deadline_history (
+                seq INTEGER PRIMARY KEY AUTOINCREMENT, task_id TEXT NOT NULL,
+                workspace TEXT NOT NULL, old_date TEXT, new_date TEXT,
+                basis TEXT NOT NULL, created_at TEXT NOT NULL,
+                source_event TEXT, UNIQUE(task_id,workspace,source_event)
+            );
             CREATE TABLE IF NOT EXISTS legacy_imports (
                 source TEXT NOT NULL, legacy_id TEXT NOT NULL, task_id TEXT NOT NULL,
                 PRIMARY KEY(source, legacy_id)
@@ -177,6 +183,23 @@ class TaskBoardStore:
     @staticmethod
     def _changed(connection: sqlite3.Connection) -> None:
         connection.execute("UPDATE board_state SET revision=revision+1 WHERE id=1")
+
+    @staticmethod
+    def record_deadline(
+        connection, task_id, workspace, old_date, new_date, basis, source_event=None
+    ):
+        connection.execute(
+            "INSERT INTO task_deadline_history(task_id,workspace,old_date,new_date,basis,created_at,source_event) VALUES(?,?,?,?,?,?,?)",
+            (
+                task_id,
+                workspace,
+                old_date,
+                new_date,
+                json.dumps(basis, ensure_ascii=False),
+                datetime.now(timezone.utc).isoformat(),
+                source_event,
+            ),
+        )
 
     @staticmethod
     def _snapshot(connection: sqlite3.Connection) -> TaskBoard:
@@ -268,6 +291,15 @@ class TaskBoardStore:
                     card_id,
                 ),
             )
+            if row["due_date"] != updated.due_date:
+                self.record_deadline(
+                    connection,
+                    card_id,
+                    updated.workspace_id or "",
+                    row["due_date"],
+                    updated.due_date,
+                    {"kind": "manual_task_edit", "evidence": "not_supplied"},
+                )
             # Moving a task never carries references from its former workspace.
             connection.execute(
                 "DELETE FROM session_tasks WHERE task_id=? AND workspace_id!=?",

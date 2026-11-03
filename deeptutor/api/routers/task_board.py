@@ -22,6 +22,8 @@ from deeptutor.services.announcement_inbox import (
     ReceiveAnnouncement,
     ReviewAnnouncement,
 )
+from deeptutor.services.drive_source.client import DriveFailure
+from deeptutor.services.notion_source.client import NotionFailure
 from deeptutor.services.task_board import (
     CreateCard,
     LinkStatus,
@@ -32,6 +34,7 @@ from deeptutor.services.task_board import (
     get_task_board_store,
     workspace_board,
 )
+from deeptutor.services.task_detail import AdoptDeadline, LinkEvidence, TaskDetail
 from deeptutor.services.workspace.context import workspace_context
 from deeptutor.services.workspace.models import WorkspaceError
 
@@ -177,3 +180,36 @@ def review_announcement(item_id: str, payload: ReviewAnnouncement, request: Requ
 @router.post("/inbox/{item_id}/task")
 def convert_announcement(item_id: str, payload: ConvertAnnouncement, request: Request):
     return inbox_call(request, lambda inbox: inbox.convert(item_id, payload))
+
+
+@router.get("/cards/{card_id}/detail")
+def task_detail(card_id: str, request: Request):
+    return detail_call(request, lambda service: service.read(card_id))
+
+
+@router.get("/cards/{card_id}/evidence-choices")
+def task_evidence_choices(card_id: str, request: Request):
+    return detail_call(request, lambda service: service.choices(card_id))
+
+
+@router.post("/cards/{card_id}/evidence")
+def task_link_evidence(card_id: str, payload: LinkEvidence, request: Request):
+    return detail_call(request, lambda service: service.link(card_id, payload))
+
+
+@router.post("/cards/{card_id}/deadline-source")
+def task_adopt_deadline(card_id: str, payload: AdoptDeadline, request: Request):
+    return detail_call(request, lambda service: service.adopt(card_id, payload))
+
+
+def detail_call(request, operation):
+    try:
+        workspace = board_workspace(request)
+        with workspace_context(workspace):
+            return operation(TaskDetail(get_task_board_store(), workspace))
+    except InboxError as exc:
+        raise HTTPException(exc.status, detail={"code": exc.code}) from None
+    except (DriveFailure, NotionFailure):
+        raise HTTPException(409, detail={"code": "source_unavailable"}) from None
+    except sqlite3.Error:
+        raise HTTPException(409, detail={"code": "storage_unavailable"}) from None

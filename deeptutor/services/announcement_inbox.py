@@ -199,5 +199,21 @@ class AnnouncementInbox:
                 "UPDATE announcement_inbox SET task_id=?,revision=revision+1 WHERE id=?",
                 (task_id, item_id),
             )
+            self.board.record_deadline(
+                conn,
+                task_id,
+                self.workspace,
+                None,
+                payload["due_date"],
+                {
+                    "kind": "announcement",
+                    "announcement_id": item_id,
+                    "source_label": payload["source_label"],
+                    "source_key": payload["source_key"],
+                    "source_url": payload["source_url"],
+                    "simulated": payload["simulated"],
+                },
+                "receipt:" + item_id,
+            )
             self.board._changed(conn)
             return self.render(conn, self.row(conn, item_id))

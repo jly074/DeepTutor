@@ -2,7 +2,7 @@
 
 import { FeaturePage, pageGridClass } from '@/components/layout/FeaturePage'
 import { useTaskBlocks } from '@/features/calendar/store/calendar-store'
-import { activeWorkspaceId } from '@/lib/workspace-scope'
+import { activeWorkspaceId, scopedUrl } from '@/lib/workspace-scope'
 import Link from 'next/link'
 import { addDays, dateKey, startOfWeek } from '@/features/calendar/model/dates'
 import { useRef, useState } from 'react'
@@ -349,6 +349,7 @@ export default function KanbanBoard() {
                               </p>
                             )}
                           </button>
+                          <Link href={scopedUrl(`/kanban/${encodeURIComponent(card.id)}`)} className="mt-2 inline-block text-xs underline">{t('detail.open')}</Link>
                           <div className="pointer-events-none absolute -right-0.5 -top-0.5 flex items-center gap-0.5 rounded-r-md bg-gradient-to-l from-popover from-80% to-transparent pl-4 opacity-0 transition-opacity duration-150 group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100 group-has-[:focus-visible]/kanban-card:pointer-events-auto group-has-[:focus-visible]/kanban-card:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
                             {!showArchived && index > 0 && (
                               <Tooltip label={t('kanban.back')}>
