@@ -1087,6 +1087,33 @@ async def update_openai_codex_reasoning_effort(
     return status_payload
 
 
+@router.get("/credential-storage")
+def credential_storage():
+    _require_settings_admin()
+    from deeptutor.services.config import protected_settings
+
+    return protected_settings.state(get_model_catalog_service().path.parent)
+
+
+@router.post("/credential-storage/protect")
+def protect_credential_storage():
+    _require_settings_admin()
+    from deeptutor.services.config import protected_settings
+
+    catalog = get_model_catalog_service()
+    draft = get_settings_draft_service()
+    try:
+        if catalog.path.parent.resolve() != draft.path.parent.resolve():
+            raise protected_settings.ProtectionError("Settings owners differ.")
+        with catalog._lock, draft._lock:
+            return protected_settings.enable(catalog.path.parent)
+    except (protected_settings.ProtectionError, OSError):
+        raise HTTPException(
+            409,
+            "Settings protection did not complete. Existing files are preserved or protected; retry on the same Windows account.",
+        ) from None
+
+
 @router.get("/catalog")
 async def get_catalog():
     _require_settings_admin()

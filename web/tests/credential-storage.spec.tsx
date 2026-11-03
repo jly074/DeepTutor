@@ -1,0 +1,36 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { beforeEach, expect, it, vi } from 'vitest'
+import CredentialStorageNotice from '@/components/settings/CredentialStorageNotice'
+const request = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/api', () => ({ apiFetch: request, apiUrl: (s: string) => s }))
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (s: string) => s }) }))
+beforeEach(() => request.mockReset())
+const reply = (available: boolean, enabled = false) => ({ ok: true, json: async () => ({ available, enabled, files: { 'model_catalog.json': enabled ? 'protected' : 'plaintext' } }) })
+it('requires explicit consent and action; reflects persisted protection status', async () => {
+  request.mockResolvedValueOnce(reply(true)).mockResolvedValueOnce(reply(true, true))
+  render(<CredentialStorageNotice />)
+  const button = await screen.findByRole('button', { name: 'credentialStorage.enable' })
+  expect(button).toBeDisabled()
+  expect(request).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByRole('checkbox'))
+  expect(button).toBeEnabled()
+  fireEvent.click(button)
+  expect(await screen.findByText('credentialStorage.protected')).toBeVisible()
+  expect(request.mock.calls[1]).toEqual(['/api/settings/credential-storage/protect', { method: 'POST' }])
+})
+it('does not offer protection on an unsupported host', async () => {
+  request.mockResolvedValue(reply(false))
+  render(<CredentialStorageNotice />)
+  expect(await screen.findByText('credentialStorage.unsupported')).toBeVisible()
+  expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  expect(request).toHaveBeenCalledTimes(1)
+})
+it('reports safe failure without claiming protection', async () => {
+  request.mockResolvedValueOnce(reply(true)).mockResolvedValueOnce({ ok: false })
+  render(<CredentialStorageNotice />)
+  await screen.findByRole('checkbox')
+  fireEvent.click(screen.getByRole('checkbox'))
+  fireEvent.click(screen.getByRole('button'))
+  await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('credentialStorage.error'))
+  expect(screen.queryByText('credentialStorage.protected')).not.toBeInTheDocument()
+})

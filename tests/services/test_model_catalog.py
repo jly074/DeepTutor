@@ -103,18 +103,14 @@ def test_load_does_not_sync_existing_active_profiles_from_dotenv(tmp_path: Path)
     assert emb_model["dimension"] == "3072"
 
 
-def test_load_recovers_invalid_catalog_with_defaults(tmp_path: Path):
+def test_load_preserves_invalid_catalog_without_overwriting_possible_ciphertext(tmp_path: Path):
+    from deeptutor.services.config.protected_settings import ProtectionError
+
     catalog_path = tmp_path / "model_catalog.json"
     catalog_path.write_text("{not-json", encoding="utf-8")
-
-    catalog = ModelCatalogService(path=catalog_path).load()
-
-    # Derived rather than re-listed: a new service should not need this test
-    # edited to keep passing, only the one that describes it.
-    expected_services = set(SERVICE_NAMES)
-    assert set(catalog["services"]) == expected_services
-    saved = json.loads(catalog_path.read_text(encoding="utf-8"))
-    assert set(saved["services"]) == expected_services
+    with pytest.raises(ProtectionError):
+        ModelCatalogService(path=catalog_path).load()
+    assert catalog_path.read_text(encoding="utf-8") == "{not-json"
 
 
 def test_catalog_migration_read_cannot_overwrite_concurrent_settings_update(tmp_path, monkeypatch):

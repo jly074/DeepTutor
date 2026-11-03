@@ -35,6 +35,7 @@ from typing import Any
 
 from deeptutor.services.path_service import get_path_service
 
+from . import protected_settings
 from .model_catalog import redact_catalog_secrets, restore_catalog_secrets
 
 DRAFT_VERSION = 1
@@ -66,16 +67,25 @@ class SettingsDraftService:
         return cls._instances[key]
 
     def load(self) -> dict[str, Any]:
-        if not self.path.exists() or self.path.stat().st_size == 0:
+        if not self.path.exists():
+            return _empty_draft()
+        if self.path.stat().st_size == 0:
+            if (self.path.parent / protected_settings.MARKER).exists():
+                raise protected_settings.ProtectionError("Protected draft is empty; file preserved.")
             return _empty_draft()
         try:
             loaded = json.loads(self.path.read_text(encoding="utf-8"))
         except Exception:
+            if (self.path.parent / protected_settings.MARKER).exists():
+                raise protected_settings.ProtectionError(
+                    "Protected draft is unreadable; file preserved."
+                ) from None
             # A corrupt draft is not worth failing a settings page over; the
             # live configuration is unaffected either way.
             return _empty_draft()
         if not isinstance(loaded, dict):
             return _empty_draft()
+        loaded = protected_settings.decode(loaded)
         draft = _empty_draft()
         draft.update({key: loaded.get(key, draft[key]) for key in draft})
         if not isinstance(draft.get("extensions"), dict):
@@ -90,6 +100,7 @@ class SettingsDraftService:
                 normalized["extensions"] = {}
             normalized["version"] = DRAFT_VERSION
             normalized["updated_at"] = _now()
+            protected = protected_settings.encode(normalized, self.path)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             fd, temp_name = tempfile.mkstemp(
                 prefix=f".{self.path.name}.", suffix=".tmp", dir=self.path.parent
@@ -97,7 +108,7 @@ class SettingsDraftService:
             temp_path = Path(temp_name)
             try:
                 with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-                    json.dump(normalized, handle, indent=2, ensure_ascii=False)
+                    json.dump(protected, handle, indent=2, ensure_ascii=False)
                     handle.write("\n")
                     handle.flush()
                     os.fsync(handle.fileno())

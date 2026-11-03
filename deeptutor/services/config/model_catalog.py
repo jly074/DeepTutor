@@ -19,6 +19,7 @@ from deeptutor.services.provider_registry import (
     wire_api_from_api_format,
 )
 
+from . import protected_settings
 from .embedding_endpoint import (
     is_gemini_native_embedding_endpoint,
     normalize_embedding_endpoint_for_display,
@@ -289,18 +290,23 @@ class ModelCatalogService:
             return catalog
 
     def _read_existing_catalog(self) -> dict[str, Any]:
-        if not self.path.exists() or self.path.stat().st_size == 0:
+        if not self.path.exists():
             return {}
+        if self.path.stat().st_size == 0:
+            raise protected_settings.ProtectionError("Settings are empty; original file preserved.")
         try:
             loaded = json.loads(self.path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):
-            return {}
-        return loaded if isinstance(loaded, dict) else {}
+            raise protected_settings.ProtectionError(
+                "Settings are unreadable; original file preserved."
+            ) from None
+        return protected_settings.decode(loaded) if isinstance(loaded, dict) else {}
 
     def save(self, catalog: dict[str, Any]) -> dict[str, Any]:
         with self._lock:
             normalized = deepcopy(catalog)
             self._normalize(normalized)
+            protected = protected_settings.encode(normalized, self.path)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             fd, temp_name = tempfile.mkstemp(
                 prefix=f".{self.path.name}.",
@@ -310,7 +316,7 @@ class ModelCatalogService:
             temp_path = Path(temp_name)
             try:
                 with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-                    json.dump(normalized, handle, indent=2, ensure_ascii=False)
+                    json.dump(protected, handle, indent=2, ensure_ascii=False)
                     handle.write("\n")
                     handle.flush()
                     os.fsync(handle.fileno())

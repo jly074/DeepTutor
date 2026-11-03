@@ -6432,5 +6432,15 @@
   "drive.remoteReference": "遠端來源引用",
   "drive.notDownloaded": "內容尚未下載，教學不可讀取",
   "drive.realMode": "真實連線狀態",
-  "drive.demoMode": "試用合成示範"
+  "drive.demoMode": "試用合成示範",
+  "credentialStorage.title": "供應商憑證保存",
+  "credentialStorage.loading": "正在檢查本機保護狀態…",
+  "credentialStorage.protected": "供應商設定與設定草稿已使用 Windows 帳戶保護。",
+  "credentialStorage.plaintext": "供應商設定可能以明文保存。請先啟用保護，再輸入真實憑證。",
+  "credentialStorage.unsupported": "此主機尚未提供供應商設定加密保護，請暫勿輸入真實憑證。",
+  "credentialStorage.scope": "僅保護供應商設定與設定草稿，不涵蓋其他整合、日誌、匯出或舊備份。同一系統帳戶的程序仍可存取憑證。",
+  "credentialStorage.consent": "我了解設定將綁定此 Windows 帳戶；複製加密檔案到其他電腦可能無法還原。既有備份不會變動。",
+  "credentialStorage.protecting": "保護中…",
+  "credentialStorage.enable": "保護供應商設定",
+  "credentialStorage.error": "無法確認保護已完成。請保留既有檔案，在同一 Windows 帳戶重試；暫勿輸入憑證。"
 }

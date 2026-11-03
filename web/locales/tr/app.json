@@ -6432,5 +6432,15 @@
   "drive.remoteReference": "Remote reference",
   "drive.notDownloaded": "Content not downloaded; unavailable for teaching",
   "drive.realMode": "Real connection status",
-  "drive.demoMode": "Try synthetic demonstration"
+  "drive.demoMode": "Try synthetic demonstration",
+  "credentialStorage.title": "Provider credential storage",
+  "credentialStorage.loading": "Checking local protection…",
+  "credentialStorage.protected": "Provider catalog and settings drafts use Windows account protection.",
+  "credentialStorage.plaintext": "Provider settings may be stored as plaintext. Enable protection before entering real credentials.",
+  "credentialStorage.unsupported": "Encrypted provider storage is not available on this host. Do not enter real credentials yet.",
+  "credentialStorage.scope": "This protects the provider catalog and settings drafts only, not all integrations, logs, exports or older backups. Same-account processes can still access credentials.",
+  "credentialStorage.consent": "I understand these settings will be bound to this Windows account; copying the encrypted files to another computer may not restore them. Existing backups remain unchanged.",
+  "credentialStorage.protecting": "Protecting…",
+  "credentialStorage.enable": "Protect provider settings",
+  "credentialStorage.error": "Protection could not be confirmed. Keep existing files and retry on the same Windows account; do not enter credentials."
 }

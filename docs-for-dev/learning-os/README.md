@@ -1,3 +1,5 @@
+> Latest security milestone (2026-11-03): [provider storage and integration prerequisites](security-prerequisites.md). Earlier acceptance and patch instructions below are historical.
+
 # Question source handoff — 2026-11-02
 
 Original first-round acceptance snapshot: implemented and locally verified; awaiting user acceptance.

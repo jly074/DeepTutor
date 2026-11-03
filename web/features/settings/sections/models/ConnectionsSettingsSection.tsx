@@ -2,6 +2,8 @@
 
 import { useTranslation } from "react-i18next";
 
+import CredentialStorageNotice from "@/components/settings/CredentialStorageNotice";
+
 import { ProvidersWorkspace } from "@/components/settings/ProvidersWorkspace";
 import { SettingsPageHeader } from "@/components/settings/shared";
 
@@ -15,6 +17,7 @@ export default function ConnectionsSettingsPage() {
           "Manage provider names, URLs, and credentials. Configure models on their own pages.",
         )}
       />
+      <CredentialStorageNotice />
       <ProvidersWorkspace />
     </div>
   );
