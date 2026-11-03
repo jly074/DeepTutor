@@ -698,6 +698,10 @@ def _learning_surface_for_path(
     normalized = "/" + str(path or "").lstrip("/")
     # Metadata and explicit personal OAuth only; no administrator credential setup.
     if (method.upper(), route_path) in {
+        ("GET", "/api/notion-sources"),
+        ("POST", "/api/notion-sources/schema"),
+        ("POST", "/api/notion-sources/preview"),
+        ("POST", "/api/notion-sources/snapshots"),
         ("GET", "/api/drive-sources/oauth/status"),
         ("POST", "/api/drive-sources/oauth/start"),
         ("POST", "/api/drive-sources/oauth/complete"),

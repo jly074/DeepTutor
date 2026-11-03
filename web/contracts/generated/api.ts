@@ -5491,6 +5491,74 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/notion-sources": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Overview */
+    readonly get: operations["overview_api_notion_sources_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/notion-sources/preview": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Preview */
+    readonly post: operations["preview_api_notion_sources_preview_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/notion-sources/schema": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Schema */
+    readonly post: operations["schema_api_notion_sources_schema_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/notion-sources/snapshots": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Snapshot */
+    readonly post: operations["snapshot_api_notion_sources_snapshots_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/partner-groups": {
     readonly parameters: {
       readonly query?: never;
@@ -14491,6 +14559,25 @@ export interface components {
       /** Name */
       readonly name: string;
     };
+    /** Import */
+    readonly Import: {
+      /**
+       * Consent
+       * @constant
+       */
+      readonly consent: true;
+      /**
+       * Cursor
+       * @default
+       */
+      readonly cursor: string;
+      /** Fingerprint */
+      readonly fingerprint: string;
+      /** Page Id */
+      readonly page_id: string;
+      /** Property Ids */
+      readonly property_ids: readonly string[];
+    };
     /** ImportedMessage */
     readonly ImportedMessage: {
       /**
@@ -16324,6 +16411,21 @@ export interface components {
       /** Total */
       readonly total: number;
     };
+    /** Preview */
+    readonly Preview: {
+      /**
+       * Consent
+       * @constant
+       */
+      readonly consent: true;
+      /**
+       * Cursor
+       * @default
+       */
+      readonly cursor: string;
+      /** Property Ids */
+      readonly property_ids: readonly string[];
+    };
     /** ProbeFolderRequest */
     readonly ProbeFolderRequest: {
       /** Folder Path */
@@ -16686,6 +16788,14 @@ export interface components {
     readonly ReadAloudAudioPayload: {
       /** Locator */
       readonly locator: number;
+    };
+    /** ReadConsent */
+    readonly ReadConsent: {
+      /**
+       * Consent
+       * @constant
+       */
+      readonly consent: true;
     };
     /**
      * ReadingActivityRecord
@@ -19317,6 +19427,7 @@ export type SchemaImageDescriptionModelSelection =
   components["schemas"]["ImageDescriptionModelSelection"];
 export type SchemaImaKnowledgeBaseSummary =
   components["schemas"]["ImaKnowledgeBaseSummary"];
+export type SchemaImport = components["schemas"]["Import"];
 export type SchemaImportedMessage = components["schemas"]["ImportedMessage"];
 export type SchemaImportedSession = components["schemas"]["ImportedSession"];
 export type SchemaImportFromBookRequest =
@@ -19458,6 +19569,7 @@ export type SchemaPracticeQuestion = components["schemas"]["PracticeQuestion"];
 export type SchemaPracticeSourceCounts =
   components["schemas"]["PracticeSourceCounts"];
 export type SchemaPracticeSummary = components["schemas"]["PracticeSummary"];
+export type SchemaPreview = components["schemas"]["Preview"];
 export type SchemaProbeFolderRequest =
   components["schemas"]["ProbeFolderRequest"];
 export type SchemaProbeImaRequest = components["schemas"]["ProbeImaRequest"];
@@ -19490,6 +19602,7 @@ export type SchemaReactEditResponse =
   components["schemas"]["ReactEditResponse"];
 export type SchemaReadAloudAudioPayload =
   components["schemas"]["ReadAloudAudioPayload"];
+export type SchemaReadConsent = components["schemas"]["ReadConsent"];
 export type SchemaReadingActivityRecord =
   components["schemas"]["ReadingActivityRecord"];
 export type SchemaReadingLearningRecords =
@@ -31434,6 +31547,158 @@ export interface operations {
       };
     };
     readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly overview_api_notion_sources_get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly preview_api_notion_sources_preview_post: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["Preview"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly schema_api_notion_sources_schema_post: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ReadConsent"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly snapshot_api_notion_sources_snapshots_post: {
+    readonly parameters: {
+      readonly query?: {
+        readonly mode?: "live" | "demo";
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["Import"];
+      };
+    };
     readonly responses: {
       /** @description Successful Response */
       readonly 200: {

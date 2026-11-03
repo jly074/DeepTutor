@@ -111,6 +111,12 @@
       "order": 634
     },
     {
+      "reference": "deeptutor.api.routers.notion_sources:router",
+      "options": {"prefix": "/api/notion-sources", "tags": ["notion-sources"]},
+      "auth": "learning",
+      "order": 663
+    },
+    {
       "reference": "deeptutor.api.routers.drive_sources:router",
       "options": {"prefix": "/api/drive-sources", "tags": ["drive-sources"]},
       "auth": "learning",
