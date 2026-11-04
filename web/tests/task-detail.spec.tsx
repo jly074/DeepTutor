@@ -41,3 +41,25 @@ it('selects only saved IDs and retains evidence on stale-source failure',async()
  expect(screen.getByTestId('task-current-deadline')).toHaveTextContent('inbox.unknown')
  expect(screen.getByText('detail.missingAnnouncement')).toBeVisible()
 })
+it('keeps the saved task readable when source choices fail and recovers on refresh',async()=>{
+ let fail=true
+ request.mockImplementation(async(_w,_id,suffix='detail')=>{
+  if(suffix==='evidence-choices'){if(fail)throw new TaskDetailError('storage_unavailable');return choices}
+  return data
+ })
+ render(<TaskDetailPanel taskId="task-1" workspaceId="course-a"/>)
+ expect(await screen.findByRole('alert')).toHaveTextContent('detail.error.storage_unavailable')
+ expect(screen.getByTestId('task-current-deadline')).toHaveTextContent('inbox.unknown')
+ expect(screen.getByRole('button',{name:'detail.link'})).toBeDisabled()
+ fail=false
+ fireEvent.click(screen.getByRole('button',{name:'inbox.refresh'}))
+ await screen.findByRole('option',{name:'[Synthetic] drive: Synthetic material'})
+ expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+ fireEvent.change(screen.getByLabelText('detail.chooseSource'),{target:{value:'0'}})
+ fail=true
+ fireEvent.click(screen.getByRole('button',{name:'inbox.refresh'}))
+ await screen.findByRole('alert')
+ expect(screen.getByRole('button',{name:'detail.link'})).toBeDisabled()
+ expect(screen.queryByRole('option',{name:'[Synthetic] drive: Synthetic material'})).not.toBeInTheDocument()
+ expect(request.mock.calls.every(c=>!c[3])).toBe(true)
+})

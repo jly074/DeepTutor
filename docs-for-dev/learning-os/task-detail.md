@@ -81,3 +81,31 @@ Reverting code does not reverse confirmed date edits; preserve their audit histo
 
 Next: user acceptance on the intended running instance, including manually verified
 real source links. Calendar scheduling and automation migration remain separate work.
+
+## Revalidation, 2026-11-04
+
+Baseline `5f8c3eeed9c7dd3145a298e4d1d0411ab2835a96`, clean `work` checkout.
+Reproduced an initial-load failure: a failed evidence-choice request hid a
+successfully loaded task because the two requests used `Promise.all`. They now
+settle independently. The task remains readable, the failure is visible, and
+refresh clears stale choices and confirmations before retrying.
+
+Targeted backend regression: 51 passed. Related rendered UI: 13 passed. New
+coverage includes 16 concurrent receipts/conversions/source links, partial
+provider-store failure without leaking error details, archived-task write
+rejection, and choice failure/recovery without implicit writes. Existing cases
+still cover deadline nulls/corrections, rollback, stale versions and isolation.
+
+Real local API + Chromium desktop/mobile replay passed in a fresh synthetic
+runtime. An injected HTTP 503 verified the UI failure path. Full task detail and
+board JSON remained identical after stopping PID 34160 and starting PID 34476
+against the same runtime. Both test services were stopped afterward; the earlier
+runtime was preserved. The first browser script used an incorrect refresh-button
+label; correcting that test locator and replaying in a fresh runtime passed.
+
+The cloud environment reports no remote-preview capability, configured secrets,
+outbound identities or VPN. No externally accessible preview URL is established.
+Screenshots document the tested UI but are not a live trial. A future phone trial
+requires an authenticated preview facility or an explicitly approved private
+hosting target; never expose this local-mode runtime through an anonymous tunnel.
+No real account connection, deployment, push or expanded permission occurred.

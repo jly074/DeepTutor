@@ -303,3 +303,90 @@ def test_moving_task_does_not_expose_old_workspace_evidence(client, as_user):
         base + "/detail", headers=headers(), params={"dt_workspace": workspace}
     ).json()
     assert data["announcements"] == [] and data["links"] == [] and data["deadline_history"] == []
+
+
+def test_partial_provider_failure_keeps_other_choices_and_saved_detail(
+    client, as_user, monkeypatch
+):
+    task, _ = create_task(client)
+    seed_sources(as_user)
+    original = TaskDetail.candidates
+
+    def partial(provider, mode):
+        if provider == "drive":
+            raise RuntimeError("synthetic secret must not leak")
+        return original(provider, mode)
+
+    monkeypatch.setattr(TaskDetail, "candidates", staticmethod(partial))
+    response = client.get(api_path(task) + "/evidence-choices", headers=headers())
+    assert response.status_code == 200
+    assert "synthetic secret" not in response.text
+    data = response.json()
+    assert all(s["provider"] == "notion" for s in data["sources"])
+    assert len(data["sources"]) == 1
+    assert all(s["state"] == "unavailable" for s in data["states"] if s["provider"] == "drive")
+    assert client.get(api_path(task) + "/detail", headers=headers()).status_code == 200
+
+
+def test_parallel_receipt_conversion_and_source_link_are_idempotent(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from deeptutor.services.task_detail import LinkEvidence, digest
+
+    board = TaskBoardStore(tmp_path / "parallel.sqlite")
+    inbox = AnnouncementInbox(board, "")
+    payload = ReceiveAnnouncement(**receipt())
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        receipts = list(pool.map(lambda _: inbox.receive(payload)["item"], range(16)))
+    assert len({row["id"] for row in receipts}) == 1
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        tasks = list(
+            pool.map(
+                lambda _: inbox.convert(receipts[0]["id"], ConvertAnnouncement(revision=1))[
+                    "task_id"
+                ],
+                range(16),
+            )
+        )
+    assert len(set(tasks)) == 1 and len(board.read().cards) == 1
+    snapshot = {"id": "synthetic-source", "label": "Synthetic", "metadata": {"simulated": True}}
+    source = SimpleNamespace(
+        id=snapshot["id"], metadata=snapshot["metadata"], model_dump=lambda **_: snapshot
+    )
+    monkeypatch.setattr(TaskDetail, "candidates", staticmethod(lambda *_: ("demo", [source])))
+    service = TaskDetail(board, "")
+    choice = LinkEvidence(
+        provider="drive", mode="demo", source_id=source.id, fingerprint=digest(snapshot)
+    )
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(lambda _: service.link(tasks[0], choice), range(16)))
+    assert len(service.read(tasks[0])["links"]) == 1
+    with sqlite3.connect(board.path) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM task_source_links").fetchone()[0] == 1
+
+
+def test_archived_task_rejects_new_evidence_and_deadline(client, as_user):
+    task, _ = create_task(client)
+    seed_sources(as_user)
+    base = api_path(task)
+    choice = client.get(base + "/evidence-choices", headers=headers()).json()["sources"][0]
+    client.patch(base, headers=headers(), json={"archived": True})
+    response = client.post(
+        base + "/evidence",
+        headers=headers(),
+        json={k: v for k, v in choice.items() if k != "label"},
+    )
+    assert response.status_code == 409 and response.json()["detail"]["code"] == "task_archived"
+    detail = client.get(base + "/detail", headers=headers()).json()
+    response = client.post(
+        base + "/deadline-source",
+        headers=headers(),
+        json={
+            "confirm": True,
+            "announcement_id": detail["announcements"][0]["id"],
+            "announcement_revision": 1,
+            "expected_updated_at": detail["task"]["updated_at"],
+        },
+    )
+    assert response.status_code == 409
+    assert client.get(base + "/detail", headers=headers()).json() == detail

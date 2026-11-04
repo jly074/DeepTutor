@@ -19,10 +19,16 @@ export default function TaskDetailPanel({taskId,workspaceId}:{taskId:string;work
  const report=(e:unknown)=>setError(e instanceof TaskDetailError&&['not_found','source_changed','source_unavailable','stale_revision','already_linked','task_archived','link_limit','storage_unavailable'].includes(e.code)?e.code:'blocked')
  useEffect(()=>{
   let active=true
-  Promise.all([taskDetailRequest<TaskDetailData>(workspaceId,taskId),taskDetailRequest<EvidenceChoices>(workspaceId,taskId,'evidence-choices')]).then(([d,c])=>{if(active){setData(d);setChoices(c)}}).catch(e=>{if(active)report(e)}).finally(()=>{if(active)setBusy(false)})
+  Promise.allSettled([taskDetailRequest<TaskDetailData>(workspaceId,taskId),taskDetailRequest<EvidenceChoices>(workspaceId,taskId,'evidence-choices')]).then(([d,c])=>{
+   if(!active)return
+   if(d.status==='fulfilled')setData(d.value)
+   if(c.status==='fulfilled')setChoices(c.value)
+   if(d.status==='rejected')report(d.reason)
+   else if(c.status==='rejected')report(c.reason)
+  }).finally(()=>{if(active)setBusy(false)})
   return()=>{active=false}
  },[taskId,workspaceId])
- async function reload(){setBusy(true);setError('');try{setData(await taskDetailRequest(workspaceId,taskId));setChoices(await taskDetailRequest(workspaceId,taskId,'evidence-choices'));setSource('');setAnnouncement('');setConsent(false)}catch(e){report(e)}finally{setBusy(false)}}
+ async function reload(){setBusy(true);setError('');setChoices(null);setSource('');setAnnouncement('');setConsent(false);try{setData(await taskDetailRequest(workspaceId,taskId));setChoices(await taskDetailRequest(workspaceId,taskId,'evidence-choices'))}catch(e){report(e)}finally{setBusy(false)}}
  async function link(){
   const selected=choices?.sources[Number(source)];if(source===''||!selected)return
   setBusy(true);setError('')
