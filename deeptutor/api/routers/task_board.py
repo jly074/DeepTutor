@@ -23,6 +23,7 @@ from deeptutor.services.announcement_inbox import (
     ReceiveAnnouncement,
     ReviewAnnouncement,
 )
+from deeptutor.services.automation_readiness import readiness
 from deeptutor.services.drive_source.client import DriveFailure
 from deeptutor.services.notion_source.client import NotionFailure
 from deeptutor.services.storage.file_library import get_file_library_store
@@ -89,6 +90,12 @@ async def board_events(request: Request):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.get("/automation-readiness")
+def automation_readiness(request: Request):
+    workspace = board_workspace(request)
+    return readiness(lambda: get_task_board_store().read(), workspace)
 
 
 @router.post("/cards", response_model=TaskBoard, status_code=201)
