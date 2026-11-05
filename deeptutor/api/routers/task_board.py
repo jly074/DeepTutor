@@ -11,9 +11,10 @@ import asyncio
 
 # Manual source intake shares the board's authenticated account and workspace.
 import sqlite3
+from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import FileResponse, StreamingResponse
 
 from deeptutor.services.announcement_inbox import (
     AnnouncementInbox,
@@ -24,6 +25,7 @@ from deeptutor.services.announcement_inbox import (
 )
 from deeptutor.services.drive_source.client import DriveFailure
 from deeptutor.services.notion_source.client import NotionFailure
+from deeptutor.services.storage.file_library import get_file_library_store
 from deeptutor.services.task_board import (
     CreateCard,
     LinkStatus,
@@ -35,6 +37,7 @@ from deeptutor.services.task_board import (
     workspace_board,
 )
 from deeptutor.services.task_detail import AdoptDeadline, LinkEvidence, TaskDetail
+from deeptutor.services.unsorted import CollectBatch, Unsorted
 from deeptutor.services.workspace.context import workspace_context
 from deeptutor.services.workspace.models import WorkspaceError
 
@@ -213,3 +216,83 @@ def detail_call(request, operation):
         raise HTTPException(409, detail={"code": "source_unavailable"}) from None
     except sqlite3.Error:
         raise HTTPException(409, detail={"code": "storage_unavailable"}) from None
+
+
+def intake_service(request):
+    return Unsorted(get_task_board_store(), board_workspace(request), get_file_library_store())
+
+
+@router.get("/intake/items")
+def intake_items(request: Request, offset: int = Query(default=0, ge=0)):
+    try:
+        return intake_service(request).listing(offset)
+    except (sqlite3.Error, OSError):
+        raise HTTPException(409, detail={"code": "storage_unavailable"}) from None
+
+
+@router.post("/intake/batch")
+async def intake_upload(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    consent: bool = Form(False),
+    data_class: Literal["synthetic", "approved_non_sensitive"] = Form(...),
+    source_id: str | None = Form(None),
+):
+    try:
+        if not consent:
+            raise HTTPException(403, detail={"code": "consent_required"})
+        if not 1 <= len(files) <= 10 or (source_id and len(files) != 1):
+            raise HTTPException(422, detail={"code": "batch_limit"})
+        service = intake_service(request)
+        results, total = [], 0
+        for upload in files:
+            try:
+                data = await upload.read(5 * 1024 * 1024 + 1)
+                total += len(data)
+                if total > 20 * 1024 * 1024:
+                    raise InboxError("batch_size", 422)
+                saved = await service.receive(upload.filename or "", data, data_class, source_id)
+                results.append({"filename": upload.filename, "ok": True, **saved})
+            except InboxError as exc:
+                results.append({"filename": upload.filename, "ok": False, "code": exc.code})
+            except (sqlite3.Error, OSError):
+                results.append(
+                    {"filename": upload.filename, "ok": False, "code": "storage_unavailable"}
+                )
+        return {"results": results}
+    finally:
+        for upload in files:
+            await upload.close()
+
+
+@router.post("/intake/collect")
+def intake_collect(request: Request, payload: CollectBatch):
+    try:
+        return intake_service(request).collect(payload)
+    except InboxError as exc:
+        raise HTTPException(exc.status, detail={"code": exc.code}) from None
+    except (sqlite3.Error, OSError):
+        raise HTTPException(409, detail={"code": "storage_unavailable"}) from None
+
+
+@router.get("/intake/original/{version_id}")
+def intake_original(request: Request, version_id: str):
+    import hashlib
+
+    try:
+        service = intake_service(request)
+        with service.connection() as conn:
+            row = service.row(conn, version_id)
+        path = service.library.resolve_path(row["library_id"])
+        if path is None or hashlib.sha256(path.read_bytes()).hexdigest() != row["sha256"]:
+            raise InboxError("original_unavailable", 409)
+        return FileResponse(
+            path,
+            filename=row["filename"],
+            media_type="application/octet-stream",
+            headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+        )
+    except InboxError as exc:
+        raise HTTPException(exc.status, detail={"code": exc.code}) from None
+    except (sqlite3.Error, OSError):
+        raise HTTPException(409, detail={"code": "original_unavailable"}) from None

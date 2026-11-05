@@ -11297,6 +11297,74 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/task-board/intake/batch": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Intake Upload */
+    readonly post: operations["intake_upload_api_task_board_intake_batch_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/intake/collect": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Intake Collect */
+    readonly post: operations["intake_collect_api_task_board_intake_collect_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/intake/items": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Intake Items */
+    readonly get: operations["intake_items_api_task_board_intake_items_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/intake/original/{version_id}": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Intake Original */
+    readonly get: operations["intake_original_api_task_board_intake_original__version_id__get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/task-board/sessions/{session_id}": {
     readonly parameters: {
       readonly query?: never;
@@ -12717,6 +12785,23 @@ export interface components {
       /** File */
       readonly file: string;
     };
+    /** Body_intake_upload_api_task_board_intake_batch_post */
+    readonly Body_intake_upload_api_task_board_intake_batch_post: {
+      /**
+       * Consent
+       * @default false
+       */
+      readonly consent: boolean;
+      /**
+       * Data Class
+       * @enum {string}
+       */
+      readonly data_class: "synthetic" | "approved_non_sensitive";
+      /** Files */
+      readonly files: readonly string[];
+      /** Source Id */
+      readonly source_id?: string | null;
+    };
     /** Body_library_add */
     readonly Body_library_add: {
       /**
@@ -13377,6 +13462,11 @@ export interface components {
       readonly model: string;
       /** Reasoning Effort */
       readonly reasoning_effort?: string | null;
+    };
+    /** CollectBatch */
+    readonly CollectBatch: {
+      /** Items */
+      readonly items: readonly components["schemas"]["IntakeItemUpdate"][];
     };
     /** CommitRequest */
     readonly CommitRequest: {
@@ -14912,6 +15002,15 @@ export interface components {
       readonly name?: string | null;
       /** Ref */
       readonly ref: string;
+    };
+    /** IntakeItemUpdate */
+    readonly IntakeItemUpdate: {
+      /** Category */
+      readonly category: string;
+      /** Id */
+      readonly id: string;
+      /** Revision */
+      readonly revision: number;
     };
     /** InvidiousSettings */
     readonly InvidiousSettings: {
@@ -19456,6 +19555,8 @@ export type SchemaBodyImportPreviewApiQuestionNotebookPracticeImportPreviewPost 
   components["schemas"]["Body_import_preview_api_question_notebook_practice_import_preview_post"];
 export type SchemaBodyImportVisualizerApiVisualizersImportPost =
   components["schemas"]["Body_import_visualizer_api_visualizers_import_post"];
+export type SchemaBodyIntakeUploadApiTaskBoardIntakeBatchPost =
+  components["schemas"]["Body_intake_upload_api_task_board_intake_batch_post"];
 export type SchemaBodyLibraryAdd = components["schemas"]["Body_library_add"];
 export type SchemaBodyPreviewOfficeUploadApiFilePreviewPdfPost =
   components["schemas"]["Body_preview_office_upload_api_file_preview_pdf_post"];
@@ -19532,6 +19633,7 @@ export type SchemaCodexOAuthCallbackPayload =
   components["schemas"]["CodexOAuthCallbackPayload"];
 export type SchemaCodexReasoningEffortUpdate =
   components["schemas"]["CodexReasoningEffortUpdate"];
+export type SchemaCollectBatch = components["schemas"]["CollectBatch"];
 export type SchemaCommitRequest = components["schemas"]["CommitRequest"];
 export type SchemaCompilePageRequest =
   components["schemas"]["CompilePageRequest"];
@@ -19700,6 +19802,7 @@ export type SchemaInstallPayload = components["schemas"]["InstallPayload"];
 export type SchemaInstallRequest = components["schemas"]["InstallRequest"];
 export type SchemaInstallSkillRequest =
   components["schemas"]["InstallSkillRequest"];
+export type SchemaIntakeItemUpdate = components["schemas"]["IntakeItemUpdate"];
 export type SchemaInvidiousSettings =
   components["schemas"]["InvidiousSettings"];
 export type SchemaKiwixConnectionRequest =
@@ -45095,6 +45198,150 @@ export interface operations {
         readonly "application/json": components["schemas"]["ConvertAnnouncement"];
       };
     };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly intake_upload_api_task_board_intake_batch_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "multipart/form-data": components["schemas"]["Body_intake_upload_api_task_board_intake_batch_post"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly intake_collect_api_task_board_intake_collect_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["CollectBatch"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly intake_items_api_task_board_intake_items_get: {
+    readonly parameters: {
+      readonly query?: {
+        readonly offset?: number;
+      };
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path?: never;
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly intake_original_api_task_board_intake_original__version_id__get: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly version_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
     readonly responses: {
       /** @description Successful Response */
       readonly 200: {

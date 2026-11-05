@@ -50,6 +50,7 @@ export function LearningDashboard() {
     >
       <Link href={scopedUrl('/learning/drive')} className="mb-4 inline-block text-sm underline">{t('drive.title')}</Link>
       <Link href={scopedUrl('/learning/notion')} className="mb-4 ml-4 inline-block text-sm underline">{t('notion.title')}</Link>
+      <Link href={scopedUrl('/learning/unsorted')} className="mb-4 ml-4 inline-block text-sm underline">{t('unsorted.title')}</Link>
       <Link href={scopedUrl('/learning/inbox')} className="mb-4 ml-4 inline-block text-sm underline">{t('inbox.title')}</Link>
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1" role="group" aria-label={t('navigation.learningFilter')}>
