@@ -62,6 +62,7 @@ import {
 } from './ItemDetails'
 import { EventEditor, ScopeSelect } from './EventEditor'
 import './calendar.css'
+import {AvailabilityPanel} from './AvailabilityPanel'
 
 type View = 'day' | 'week' | 'month' | 'agenda'
 type Panel = { anchor: Anchor } & (
@@ -463,6 +464,7 @@ export default function CalendarPage() {
           {tools}
         </div>
       )}
+      <AvailabilityPanel/>
       {(calendarError || occurrences.error || layers.error) && (
         <div role="alert" className="dt-cal-alert is-error">
           <span>{t('Could not load calendar.')}</span>

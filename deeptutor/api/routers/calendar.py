@@ -214,3 +214,17 @@ async def stream(request: Request):
 @router.get("/task-blocks", response_model=dict[str, int])
 def task_blocks(request: Request):
     return get_calendar_store().task_blocks(board_workspace(request))
+
+
+@router.get("/availability")
+def read_availability(
+    day: str = Query(max_length=10),
+    tz: str = Query(default="Asia/Taipei", max_length=64),
+    start_minute: int = Query(default=540, ge=0, le=1439),
+    end_minute: int = Query(default=1080, ge=1, le=1440),
+    duration: int = Query(default=30, ge=1, le=1440),
+):
+    from deeptutor.services.calendar.availability import availability
+
+    with errors():
+        return availability(get_calendar_store(), day, tz, start_minute, end_minute, duration)

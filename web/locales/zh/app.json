@@ -6594,5 +6594,18 @@
   "detail.state.configured_not_verified": "已設定；此處未驗證真實讀取",
   "detail.state.authentication_required": "需要應用程式個人登入",
   "detail.state.unavailable": "本地來源儲存不可用",
-  "detail.choiceLimit": "候選清單每類最多顯示一百筆，並非全部來源。請到來源頁核對，勿把未顯示當作不存在。"
+  "detail.choiceLimit": "候選清單每類最多顯示一百筆，並非全部來源。請到來源頁核對，勿把未顯示當作不存在。",
+  "availability.title": "可用時間與衝突",
+  "availability.notice": "唯讀計算，09:00–18:00 Asia/Taipei。包含本帳戶所有本地保存日曆（含隱藏日曆）；外部同步尚未驗證。保護所有事件，不移動或建立行程。資料空白不代表真實行事曆有空；變更後請重新計算。",
+  "availability.date": "日期",
+  "availability.duration": "所需分鐘",
+  "availability.calculate": "計算可用時間",
+  "availability.error": "無法計算，請檢查日期後重試；沒有修改行事曆。",
+  "availability.revision": "快照版本",
+  "availability.busy": "忙碌事件數",
+  "availability.free": "候選空檔",
+  "availability.none": "沒有符合時長的空檔。",
+  "availability.conflicts": "重疊事件",
+  "availability.noConflicts": "此保存快照沒有重疊。",
+  "availability.evidence": "事件識別依據"
 }

@@ -225,3 +225,16 @@ export function restoreEvent(token: string) {
 export function getTaskBlocks(signal?: AbortSignal) {
   return json<Record<string, number>>('/task-blocks', { signal })
 }
+
+export interface Availability {
+  date: string
+  tz: string
+  revision: number
+  free: {start: string; end: string}[]
+  conflicts: {start: string; end: string; occurrence_ids: string[]; titles: string[]}[]
+  busy_count: number
+  source: 'stored_account_calendar'
+}
+export function getAvailability(day: string, tz: string, duration: number) {
+  return json<Availability>(`/availability${query({day,tz,duration:String(duration)})}`)
+}

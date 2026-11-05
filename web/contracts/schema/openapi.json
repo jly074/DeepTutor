@@ -21013,6 +21013,126 @@
         ]
       }
     },
+    "/api/calendar/availability": {
+      "get": {
+        "operationId": "read_availability_api_calendar_availability_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "day",
+            "required": true,
+            "schema": {
+              "maxLength": 10,
+              "title": "Day",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tz",
+            "required": false,
+            "schema": {
+              "default": "Asia/Taipei",
+              "maxLength": 64,
+              "title": "Tz",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_minute",
+            "required": false,
+            "schema": {
+              "default": 540,
+              "maximum": 1439,
+              "minimum": 0,
+              "title": "Start Minute",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_minute",
+            "required": false,
+            "schema": {
+              "default": 1080,
+              "maximum": 1440,
+              "minimum": 1,
+              "title": "End Minute",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "duration",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 1440,
+              "minimum": 1,
+              "title": "Duration",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Availability",
+        "tags": [
+          "calendar"
+        ]
+      }
+    },
     "/api/calendar/calendars": {
       "get": {
         "operationId": "calendars_api_calendar_calendars_get",

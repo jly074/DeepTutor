@@ -7499,5 +7499,18 @@
   "detail.state.configured_not_verified": "Configured; real read not verified here",
   "detail.state.authentication_required": "Personal app login required",
   "detail.state.unavailable": "Local source store unavailable",
-  "detail.choiceLimit": "Choices show at most one hundred per category, not every source. Check source pages; missing from this list does not mean absent."
+  "detail.choiceLimit": "Choices show at most one hundred per category, not every source. Check source pages; missing from this list does not mean absent.",
+  "availability.title": "Available time and conflicts",
+  "availability.notice": "Read-only, 09:00–18:00 Asia/Taipei. Uses all locally saved account calendars, including hidden ones. External calendar sync is not verified. Every event is protected; no events are moved or created. Empty stored data does not prove your real calendar is free. Recalculate after changes.",
+  "availability.date": "Date",
+  "availability.duration": "Minutes needed",
+  "availability.calculate": "Calculate availability",
+  "availability.error": "Could not calculate. Check the date and try again; no calendar changes were made.",
+  "availability.revision": "Snapshot revision",
+  "availability.busy": "Busy occurrences",
+  "availability.free": "Candidate free intervals",
+  "availability.none": "No interval fits this duration.",
+  "availability.conflicts": "Overlapping events",
+  "availability.noConflicts": "No overlaps in this stored snapshot.",
+  "availability.evidence": "Occurrence references"
 }
