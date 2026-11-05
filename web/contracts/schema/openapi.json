@@ -5269,6 +5269,35 @@
         "title": "ExportDocxRequest",
         "type": "object"
       },
+      "ExportHandoff": {
+        "additionalProperties": false,
+        "properties": {
+          "consent": {
+            "const": true,
+            "title": "Consent",
+            "type": "boolean"
+          },
+          "next_step": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Next Step",
+            "type": "string"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "title": "Reference Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "consent"
+        ],
+        "title": "ExportHandoff",
+        "type": "object"
+      },
       "FetchModelsPayload": {
         "properties": {
           "api_format": {
@@ -5787,6 +5816,82 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HandoffSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_at": {
+            "maxLength": 40,
+            "title": "Expires At",
+            "type": "string"
+          },
+          "format": {
+            "const": "deeptutor-task-handoff-v1",
+            "title": "Format",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 36,
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_at": {
+            "maxLength": 40,
+            "title": "Issued At",
+            "type": "string"
+          },
+          "issuer": {
+            "maxLength": 36,
+            "title": "Issuer",
+            "type": "string"
+          },
+          "next_step": {
+            "maxLength": 500,
+            "title": "Next Step",
+            "type": "string"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "todo",
+              "doing",
+              "done"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "task_id": {
+            "maxLength": 100,
+            "title": "Task Id",
+            "type": "string"
+          },
+          "version": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "format",
+          "id",
+          "issuer",
+          "task_id",
+          "version",
+          "status",
+          "issued_at",
+          "expires_at",
+          "next_step",
+          "reference_ids"
+        ],
+        "title": "HandoffSummary",
+        "type": "object"
+      },
       "ImaConfigUpdate": {
         "properties": {
           "api_key": {
@@ -5925,6 +6030,24 @@
           "chapters"
         ],
         "title": "ImportFromBookRequest",
+        "type": "object"
+      },
+      "ImportHandoff": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/HandoffSummary"
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "title": "ImportHandoff",
         "type": "object"
       },
       "ImportedMessage": {
@@ -67623,6 +67746,242 @@
           }
         },
         "summary": "Task Evidence Choices",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/handoff-export": {
+      "post": {
+        "operationId": "task_handoff_export_api_task_board_cards__card_id__handoff_export_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportHandoff"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Handoff Export",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/handoff-import": {
+      "post": {
+        "operationId": "task_handoff_import_api_task_board_cards__card_id__handoff_import_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportHandoff"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Handoff Import",
+        "tags": [
+          "task-board"
+        ]
+      }
+    },
+    "/api/task-board/cards/{card_id}/handoffs": {
+      "get": {
+        "operationId": "task_handoffs_api_task_board_cards__card_id__handoffs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Task Handoffs",
         "tags": [
           "task-board"
         ]

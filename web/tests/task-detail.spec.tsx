@@ -12,6 +12,7 @@ const choices={sources:[{provider:'drive',mode:'demo',source_id:'source-1',label
 it('never automatically links or changes dates and requires explicit confirmation',async()=>{
  request.mockImplementation(async(w,id,suffix='detail',body)=>{
   expect(w).toBe('course-a');expect(id).toBe('task-1')
+  if(suffix==='handoffs')return {items:[]}
   if(suffix==='evidence-choices')return choices
   if(suffix==='deadline-source'){expect(body).toEqual({confirm:true,announcement_id:'notice-2',announcement_revision:1,expected_updated_at:'old'});return {...data,task:{...data.task,due_date:'2026-12-12'}}}
   return data
@@ -29,6 +30,7 @@ it('never automatically links or changes dates and requires explicit confirmatio
 })
 it('selects only saved IDs and retains evidence on stale-source failure',async()=>{
  request.mockImplementation(async(_w,_id,suffix='detail',body)=>{
+  if(suffix==='handoffs')return {items:[]}
   if(suffix==='evidence-choices')return choices
   if(suffix==='evidence'){expect(body).toEqual({provider:'drive',mode:'demo',source_id:'source-1',fingerprint:'a'.repeat(64)});throw new TaskDetailError('source_changed')}
   return data
@@ -44,6 +46,7 @@ it('selects only saved IDs and retains evidence on stale-source failure',async()
 it('keeps the saved task readable when source choices fail and recovers on refresh',async()=>{
  let fail=true
  request.mockImplementation(async(_w,_id,suffix='detail')=>{
+  if(suffix==='handoffs')return {items:[]}
   if(suffix==='evidence-choices'){if(fail)throw new TaskDetailError('storage_unavailable');return choices}
   return data
  })

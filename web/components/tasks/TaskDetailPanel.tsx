@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next'
 import {scopedUrl} from '@/lib/workspace-scope'
 import {subPanelClass} from '@/components/settings/shared'
 import {taskDetailRequest,TaskDetailError,type TaskDetailData,type EvidenceChoices} from '@/lib/task-detail-api'
+import TaskHandoffPanel from './TaskHandoffPanel'
 
 export default function TaskDetailPanel({taskId,workspaceId}:{taskId:string;workspaceId:string}){
  const {t}=useTranslation()
@@ -50,6 +51,7 @@ export default function TaskDetailPanel({taskId,workspaceId}:{taskId:string;work
   {busy&&<p role="status">{t('Loading...')}</p>}
   {error&&<p role="alert" className="text-sm text-destructive">{t(`detail.error.${error}`)}</p>}
   {data&&<>
+   <TaskHandoffPanel key={`${workspaceId}:${taskId}`} taskId={taskId} workspaceId={workspaceId} links={data.links}/>
    <section className={`${subPanelClass} space-y-2 p-4`}>
     <p>{t(data.task.archived?'inbox.archived':`inbox.task.${data.task.status}`)}</p>
     <p data-testid="task-current-deadline">{t('detail.currentDue')}: {data.task.due_date||t('inbox.unknown')}</p>

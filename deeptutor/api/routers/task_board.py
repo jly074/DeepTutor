@@ -37,6 +37,7 @@ from deeptutor.services.task_board import (
     workspace_board,
 )
 from deeptutor.services.task_detail import AdoptDeadline, LinkEvidence, TaskDetail
+from deeptutor.services.task_handoff import ExportHandoff, ImportHandoff, TaskHandoff
 from deeptutor.services.unsorted import CollectBatch, Unsorted
 from deeptutor.services.workspace.context import workspace_context
 from deeptutor.services.workspace.models import WorkspaceError
@@ -203,6 +204,21 @@ def task_link_evidence(card_id: str, payload: LinkEvidence, request: Request):
 @router.post("/cards/{card_id}/deadline-source")
 def task_adopt_deadline(card_id: str, payload: AdoptDeadline, request: Request):
     return detail_call(request, lambda service: service.adopt(card_id, payload))
+
+
+@router.get("/cards/{card_id}/handoffs")
+def task_handoffs(card_id: str, request: Request):
+    return detail_call(request, lambda service: TaskHandoff(service).history(card_id))
+
+
+@router.post("/cards/{card_id}/handoff-export")
+def task_handoff_export(card_id: str, payload: ExportHandoff, request: Request):
+    return detail_call(request, lambda service: TaskHandoff(service).export(card_id, payload))
+
+
+@router.post("/cards/{card_id}/handoff-import")
+def task_handoff_import(card_id: str, payload: ImportHandoff, request: Request):
+    return detail_call(request, lambda service: TaskHandoff(service).receive(card_id, payload))
 
 
 def detail_call(request, operation):

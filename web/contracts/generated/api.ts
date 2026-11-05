@@ -11211,6 +11211,57 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/task-board/cards/{card_id}/handoff-export": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Task Handoff Export */
+    readonly post: operations["task_handoff_export_api_task_board_cards__card_id__handoff_export_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/cards/{card_id}/handoff-import": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Task Handoff Import */
+    readonly post: operations["task_handoff_import_api_task_board_cards__card_id__handoff_import_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly "/api/task-board/cards/{card_id}/handoffs": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** Task Handoffs */
+    readonly get: operations["task_handoffs_api_task_board_cards__card_id__handoffs_get"];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/task-board/colors": {
     readonly parameters: {
       readonly query?: never;
@@ -14600,6 +14651,21 @@ export interface components {
        */
       readonly title: string;
     };
+    /** ExportHandoff */
+    readonly ExportHandoff: {
+      /**
+       * Consent
+       * @constant
+       */
+      readonly consent: true;
+      /**
+       * Next Step
+       * @default
+       */
+      readonly next_step: string;
+      /** Reference Ids */
+      readonly reference_ids?: readonly number[];
+    };
     /** FetchModelsPayload */
     readonly FetchModelsPayload: {
       /** Api Format */
@@ -14819,6 +14885,35 @@ export interface components {
       /** Version */
       readonly version: number;
     };
+    /** HandoffSummary */
+    readonly HandoffSummary: {
+      /** Expires At */
+      readonly expires_at: string;
+      /**
+       * Format
+       * @constant
+       */
+      readonly format: "deeptutor-task-handoff-v1";
+      /** Id */
+      readonly id: string;
+      /** Issued At */
+      readonly issued_at: string;
+      /** Issuer */
+      readonly issuer: string;
+      /** Next Step */
+      readonly next_step: string;
+      /** Reference Ids */
+      readonly reference_ids: readonly number[];
+      /**
+       * Status
+       * @enum {string}
+       */
+      readonly status: "todo" | "doing" | "done";
+      /** Task Id */
+      readonly task_id: string;
+      /** Version */
+      readonly version: string;
+    };
     /** HTTPValidationError */
     readonly HTTPValidationError: {
       /** Detail */
@@ -14910,6 +15005,15 @@ export interface components {
     readonly ImportFromBookRequest: {
       /** Chapters */
       readonly chapters: readonly components["schemas"]["ChapterImport"][];
+    };
+    /** ImportHandoff */
+    readonly ImportHandoff: {
+      /**
+       * Confirm
+       * @default false
+       */
+      readonly confirm: boolean;
+      readonly summary: components["schemas"]["HandoffSummary"];
     };
     /**
      * IndexingLLMSelectionRequest
@@ -19753,6 +19857,7 @@ export type SchemaEventPatchRequest =
   components["schemas"]["EventPatchRequest"];
 export type SchemaExportDocxRequest =
   components["schemas"]["ExportDocxRequest"];
+export type SchemaExportHandoff = components["schemas"]["ExportHandoff"];
 export type SchemaFetchModelsPayload =
   components["schemas"]["FetchModelsPayload"];
 export type SchemaFootprintDay = components["schemas"]["FootprintDay"];
@@ -19780,6 +19885,7 @@ export type SchemaGuardianMaterialsPayload =
 export type SchemaGuardianRestrictionsPayload =
   components["schemas"]["GuardianRestrictionsPayload"];
 export type SchemaGuidanceUpdate = components["schemas"]["GuidanceUpdate"];
+export type SchemaHandoffSummary = components["schemas"]["HandoffSummary"];
 export type SchemaHttpValidationError =
   components["schemas"]["HTTPValidationError"];
 export type SchemaImaConfigUpdate = components["schemas"]["ImaConfigUpdate"];
@@ -19792,6 +19898,7 @@ export type SchemaImportedMessage = components["schemas"]["ImportedMessage"];
 export type SchemaImportedSession = components["schemas"]["ImportedSession"];
 export type SchemaImportFromBookRequest =
   components["schemas"]["ImportFromBookRequest"];
+export type SchemaImportHandoff = components["schemas"]["ImportHandoff"];
 export type SchemaIndexingLlmSelectionRequest =
   components["schemas"]["IndexingLLMSelectionRequest"];
 export type SchemaInitModulesRequest =
@@ -44965,6 +45072,119 @@ export interface operations {
     };
   };
   readonly task_evidence_choices_api_task_board_cards__card_id__evidence_choices_get: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_handoff_export_api_task_board_cards__card_id__handoff_export_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ExportHandoff"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_handoff_import_api_task_board_cards__card_id__handoff_import_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly card_id: string;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["ImportHandoff"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly task_handoffs_api_task_board_cards__card_id__handoffs_get: {
     readonly parameters: {
       readonly query?: never;
       readonly header?: {
