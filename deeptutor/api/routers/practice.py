@@ -14,6 +14,9 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, Response, Uploa
 from pydantic import BaseModel, Field
 
 from deeptutor.services.practice.answers import check_answer
+from deeptutor.services.practice.guidance import GuidanceUpdate
+from deeptutor.services.practice.guidance import update as update_guidance
+from deeptutor.services.practice.guidance import view as guidance_view
 from deeptutor.services.practice.importing import MAX_BYTES, preview
 from deeptutor.services.practice.scheduler import Rating, day_bounds
 from deeptutor.services.practice.storage import PracticeStore, ReviewConflict
@@ -38,6 +41,7 @@ class PracticeSummary(BaseModel):
 class PracticeQuestion(BaseModel):
     entry: NotebookEntryItem
     state: dict
+    guidance: dict | None = None
     content_workspace_id: str = ""
     content_workspace_name: str = ""
 
@@ -154,13 +158,22 @@ async def practice_question(entry_id: int):
     state = await asyncio.to_thread(
         PracticeStore(get_sqlite_session_store().db_path).state, entry_id
     )
-    return {"entry": entry, "state": state}
+    repo = PracticeStore(get_sqlite_session_store().db_path)
+    with repo.connect() as conn:
+        row = conn.execute("SELECT * FROM notebook_entries WHERE id=?", (entry_id,)).fetchone()
+        guidance = guidance_view(conn, row)
+    return {"entry": entry, "state": state, "guidance": guidance}
 
 
 @router.post("/questions/{entry_id}/check")
 async def check(entry_id: int, payload: AnswerRequest):
     entry = await _entry(entry_id)
-    return {"correct": check_answer(entry, payload.answer)}
+    repo = PracticeStore(get_sqlite_session_store().db_path)
+    from deeptutor.services.practice.guidance import config
+
+    with repo.connect() as conn:
+        blocked = config(conn, entry_id)["quality"] in {"missing_image", "disputed"}
+    return {"correct": None if blocked else check_answer(entry, payload.answer)}
 
 
 @router.post("/questions/{entry_id}/review")
@@ -286,3 +299,16 @@ async def import_commit(payload: CommitRequest):
         raise HTTPException(404, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+
+
+@router.post("/questions/{entry_id}/guidance")
+async def save_guidance(entry_id: int, payload: GuidanceUpdate):
+    await _entry(entry_id)
+    try:
+        return await asyncio.to_thread(
+            update_guidance, PracticeStore(get_sqlite_session_store().db_path), entry_id, payload
+        )
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ReviewConflict as exc:
+        raise HTTPException(409, str(exc)) from exc

@@ -20,6 +20,7 @@ export interface PracticeRef {
   content_workspace_name?: string
 }
 export interface PracticeQuestion {
+  guidance?: PracticeGuidance | null
   content_workspace_id?: string
   content_workspace_name?: string
   entry: NotebookEntry
@@ -97,7 +98,7 @@ export const savePracticeReview = (
   },
   workspaceId?: string
 ) =>
-  request<{ due_at: number; correct: boolean | null; rating: PracticeRating; is_mistake: boolean }>(
+  request<{ due_at: number; correct: boolean | null; rating: PracticeRating; is_mistake: boolean; deferred?: boolean }>(
     `/questions/${id}/review`,
     json(body),
     workspaceId
@@ -120,3 +121,15 @@ export async function downloadPracticeTemplate(format: 'csv' | 'xlsx') {
   anchor.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+export interface PracticeGuidance {
+ config: {version:number;quality:'unknown'|'ready'|'missing_image'|'disputed';kind:'unknown'|'original'|'recalled'|'adapted'|'simulated';note:string;reference:string}
+ status:string
+ mastery:string
+ due_at:number|null
+ evidence_ids:string[]
+ saved_explanation:string
+ attempts:{request_id:string;answer:string;at:number;correct:boolean|null;self_report:boolean;current_version:boolean}[]
+}
+export const savePracticeGuidance=(id:number,body:PracticeGuidance['config']&{request_id:string},workspaceId?:string)=>
+ request<PracticeGuidance>(`/questions/${id}/guidance`,json(body),workspaceId)

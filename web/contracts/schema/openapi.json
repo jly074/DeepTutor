@@ -5655,6 +5655,64 @@
         "title": "GuardianRestrictionsPayload",
         "type": "object"
       },
+      "GuidanceUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "unknown",
+              "original",
+              "recalled",
+              "adapted",
+              "simulated"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "maxLength": 4000,
+            "title": "Note",
+            "type": "string"
+          },
+          "quality": {
+            "enum": [
+              "unknown",
+              "ready",
+              "missing_image",
+              "disputed"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reference": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Reference",
+            "type": "string"
+          },
+          "request_id": {
+            "maxLength": 100,
+            "minLength": 16,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 0.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "request_id",
+          "version",
+          "quality",
+          "kind"
+        ],
+        "title": "GuidanceUpdate",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -9539,6 +9597,18 @@
           },
           "entry": {
             "$ref": "#/components/schemas/NotebookEntryItem"
+          },
+          "guidance": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guidance"
           },
           "state": {
             "additionalProperties": true,
@@ -48988,6 +49058,88 @@
           }
         },
         "summary": "Check",
+        "tags": [
+          "practice"
+        ]
+      }
+    },
+    "/api/question-notebook/practice/questions/{entry_id}/guidance": {
+      "post": {
+        "operationId": "save_guidance_api_question_notebook_practice_questions__entry_id__guidance_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "dt_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dt Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidanceUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Guidance",
         "tags": [
           "practice"
         ]

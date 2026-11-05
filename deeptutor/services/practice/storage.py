@@ -88,6 +88,9 @@ def initialize_practice(conn: sqlite3.Connection) -> None:
             WHERE entry_id = NEW.id AND (OLD.is_correct = 1 OR OLD.result = 'ungraded');
         END;
     """)
+    from .guidance import initialize
+
+    initialize(conn)
     if not existing:
         # Additive migration: original IDs, answers, timestamps and categories stay intact.
         conn.execute("""
@@ -247,6 +250,11 @@ class PracticeStore:
                 raise ReviewConflict(
                     "This question changed in another tab. Reload it before reviewing again."
                 )
+            from .guidance import config, fingerprint
+
+            guidance = config(conn, entry_id)
+            if guidance["quality"] in {"missing_image", "disputed"}:
+                raise ReviewConflict("Question needs source confirmation; no review was saved")
             # Objective answers are checked again at the transaction boundary.
             from .answers import check_answer
 
@@ -295,7 +303,21 @@ class PracticeStore:
                 "correct": correct,
                 "rating": rating,
                 "self_report": self_report,
-                "mastered": rating in {"good", "easy"},
+                "mastered": False,
+                "mastery": "not_established",
+                "guidance_version": guidance["version"],
+                "evidence_fingerprint": fingerprint(entry),
+                "question_snapshot": {
+                    key: entry[key]
+                    for key in (
+                        "question",
+                        "options_json",
+                        "correct_answer",
+                        "explanation",
+                        "source_metadata_json",
+                    )
+                },
+                "deferred": guidance["quality"] == "ready",
             }
             conn.execute(
                 "INSERT INTO practice_review_events VALUES(?, ?, ?, ?, ?, ?)",

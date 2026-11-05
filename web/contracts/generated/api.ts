@@ -7182,6 +7182,23 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly "/api/question-notebook/practice/questions/{entry_id}/guidance": {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    /** Save Guidance */
+    readonly post: operations["save_guidance_api_question_notebook_practice_questions__entry_id__guidance_post"];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly "/api/question-notebook/practice/questions/{entry_id}/review": {
     readonly parameters: {
       readonly query?: never;
@@ -14684,6 +14701,34 @@ export interface components {
       /** Extensions */
       readonly extensions: readonly string[];
     };
+    /** GuidanceUpdate */
+    readonly GuidanceUpdate: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      readonly kind:
+        "unknown" | "original" | "recalled" | "adapted" | "simulated";
+      /**
+       * Note
+       * @default
+       */
+      readonly note: string;
+      /**
+       * Quality
+       * @enum {string}
+       */
+      readonly quality: "unknown" | "ready" | "missing_image" | "disputed";
+      /**
+       * Reference
+       * @default
+       */
+      readonly reference: string;
+      /** Request Id */
+      readonly request_id: string;
+      /** Version */
+      readonly version: number;
+    };
     /** HTTPValidationError */
     readonly HTTPValidationError: {
       /** Detail */
@@ -16549,6 +16594,10 @@ export interface components {
        */
       readonly content_workspace_name: string;
       readonly entry: components["schemas"]["NotebookEntryItem"];
+      /** Guidance */
+      readonly guidance?: {
+        readonly [key: string]: unknown;
+      } | null;
       /** State */
       readonly state: {
         readonly [key: string]: unknown;
@@ -19628,6 +19677,7 @@ export type SchemaGuardianMaterialsPayload =
   components["schemas"]["GuardianMaterialsPayload"];
 export type SchemaGuardianRestrictionsPayload =
   components["schemas"]["GuardianRestrictionsPayload"];
+export type SchemaGuidanceUpdate = components["schemas"]["GuidanceUpdate"];
 export type SchemaHttpValidationError =
   components["schemas"]["HTTPValidationError"];
 export type SchemaImaConfigUpdate = components["schemas"]["ImaConfigUpdate"];
@@ -35901,6 +35951,45 @@ export interface operations {
     readonly requestBody: {
       readonly content: {
         readonly "application/json": components["schemas"]["AnswerRequest"];
+      };
+    };
+    readonly responses: {
+      /** @description Successful Response */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      readonly 422: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  readonly save_guidance_api_question_notebook_practice_questions__entry_id__guidance_post: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: {
+        readonly Authorization?: string | null;
+      };
+      readonly path: {
+        readonly entry_id: number;
+      };
+      readonly cookie?: {
+        readonly dt_token?: string | null;
+      };
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly "application/json": components["schemas"]["GuidanceUpdate"];
       };
     };
     readonly responses: {

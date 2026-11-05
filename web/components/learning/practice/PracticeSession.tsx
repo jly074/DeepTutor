@@ -1,5 +1,7 @@
 'use client'
 
+import {GuidancePanel} from './GuidancePanel'
+import QuestionSource from '@/components/space/question-bank/QuestionSource'
 import Markdown from '@/components/common/MarkdownRenderer'
 import { practiceMarkdown } from '@/lib/practice-content'
 import { randomUuid } from '@/lib/random-uuid'
@@ -101,8 +103,8 @@ export function PracticeSession({
           id={queue[index].id}
           workspaceId={queue[index].content_workspace_id}
           onBusy={setSaving}
-          onSaved={(due, rating) => {
-            if (rating === 'again') setQueue(current => [...current, current[index]])
+          onSaved={(due, rating, deferred) => {
+            if (rating === 'again' && !deferred) setQueue(current => [...current, current[index]])
             else setSaved(value => value + 1)
             if (due !== null) {
               dueDates.current.set(
@@ -132,7 +134,7 @@ function PracticeTurn({
 }: {
   id: number
   workspaceId?: string
-  onSaved: (due: number | null, rating: PracticeRating) => void
+  onSaved: (due: number | null, rating: PracticeRating, deferred?: boolean) => void
   onSkip: () => void
   onBusy: (busy: boolean) => void
 }) {
@@ -200,7 +202,7 @@ function PracticeTurn({
     }
     try {
       const result = await savePracticeReview(id, submission.current, workspaceId)
-      onSaved(result.due_at, result.rating)
+      onSaved(result.due_at, result.rating, result.deferred)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       if (err instanceof PracticeRequestError && err.status === 409) setConflict(true)
@@ -221,6 +223,7 @@ function PracticeTurn({
     setReload(value => value + 1)
   }
   const entry = question?.entry
+  const blocked = question?.guidance && ['missing_image','disputed'].includes(question.guidance.config.quality)
   const multi =
     entry?.question_type === 'multi_choice' || entry?.question_type === 'multiple_select'
   const choices = Object.entries(entry?.options || {})
@@ -250,6 +253,8 @@ function PracticeTurn({
               </span>
             ))}
           </div>
+          <QuestionSource source={entry.source_metadata}/>
+          {question?.guidance&&<GuidancePanel key={`${id}:${question.guidance.config.version}`} id={id} workspaceId={workspaceId} data={question.guidance} onSaved={reset}/>}
           <div className="text-base leading-relaxed">
             <Markdown
               learningTextSize={16}
@@ -324,11 +329,11 @@ function PracticeTurn({
               </button>
               <button
                 type="button"
-                disabled={busy || conflict}
+                disabled={busy || conflict || !!blocked}
                 onClick={() => void rate('good', true)}
                 className="rounded-xl border border-border px-4 py-2.5 text-sm hover:bg-muted"
               >
-                {t('I have mastered this')}
+                {t(question?.guidance ? 'guidance.selfReview' : 'I have mastered this')}
               </button>
               <button
                 type="button"
@@ -369,7 +374,7 @@ function PracticeTurn({
               {correct !== null ? (
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <p className="text-xs text-muted-foreground">
-                    {correct
+                    {question?.guidance ? t('guidance.notMastery') : correct
                       ? t(
                           'Mastered questions leave this round and return when your next review is due.'
                         )
@@ -377,18 +382,18 @@ function PracticeTurn({
                   </p>
                   <button
                     type="button"
-                    disabled={busy || conflict}
+                    disabled={busy || conflict || !!blocked}
                     onClick={() => void rate(correct ? 'good' : 'again')}
                     className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-40"
                   >
-                    {correct ? t('Mastered · Next question') : t('Practice again')}
+                    {question?.guidance ? t('guidance.defer') : correct ? t('Mastered · Next question') : t('Practice again')}
                   </button>
                 </div>
               ) : (
                 <div>
                   <h3 className="text-sm font-medium">{t('How well did you remember?')}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t(
+                    {t(question?.guidance ? 'guidance.notMastery' :
                       'Mastered questions leave this round and return when your next review is due.'
                     )}
                   </p>
@@ -396,17 +401,17 @@ function PracticeTurn({
                     {RATINGS.map(rating => (
                       <button
                         key={rating.value}
-                        aria-label={`${t(rating.label)} ${t(rating.description)}`}
+                        aria-label={`${t(question?.guidance && rating.value==='good' ? 'guidance.correctRating' : rating.label)} ${t(rating.description)}`}
                         type="button"
                         disabled={
                           busy ||
-                          conflict ||
+                          conflict || !!blocked ||
                           (!!submission.current && submission.current.rating !== rating.value)
                         }
                         onClick={() => void rate(rating.value)}
                         className="rounded-xl border border-border p-3 text-left transition hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-35"
                       >
-                        <span className="block text-sm font-semibold">{t(rating.label)}</span>
+                        <span className="block text-sm font-semibold">{t(question?.guidance && rating.value==='good' ? 'guidance.correctRating' : rating.label)}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">
                           {t(rating.description)}
                         </span>
